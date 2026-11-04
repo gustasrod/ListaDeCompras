@@ -575,6 +575,14 @@
             z-index: 20;
         }
 
+        [data-comfort="true"] .item-name { font-size: 18px; }
+        [data-comfort="true"] .item-card { padding: 16px 12px; }
+        [data-comfort="true"] .btn-icon { min-width: 48px; min-height: 48px; }
+        [data-comfort="true"] .stepper-btn,
+        [data-comfort="true"] .chip { min-height: 48px; min-width: 48px; }
+        [data-comfort="true"] .chip { padding: 10px 14px; font-size: 14px; }
+        [data-comfort="true"] .form-input { font-size: 18px; }
+
         .suggestion-chips {
             display: flex;
             gap: 6px;
@@ -587,6 +595,10 @@
             -webkit-user-select: none;
             -webkit-overflow-scrolling: touch;
         }
+        [data-hide-price="true"] .item-price-val,
+        [data-hide-price="true"] .item-price-reference,
+        [data-hide-category="true"] .item-category-tag { display: none; }
+        [data-hide-suggestions="true"] #quick-chips { display: none !important; }
 
         .suggestion-chips.is-dragging {
             cursor: grabbing;
@@ -763,6 +775,10 @@
 
         .quick-input {
             flex: 1;
+            min-width: 0;
+            resize: none;
+            line-height: 1.4;
+            max-height: 70px;
             border: none;
             background: transparent;
             font-size: 15px;
@@ -1160,7 +1176,7 @@
 
         <!-- Cabeçalho com lista ativa e ações de tema, compartilhamento e limpeza de comprados. -->
         <header class="app-header">
-            <div class="header-left" id="btn-select-list" title="Trocar de Lista">
+            <div class="header-left" id="btn-select-list" title="Trocar de Lista" role="button" tabindex="0" aria-label="Trocar de lista">
                 <div class="app-title-group">
                     <h1 id="header-list-name">
                         Supermercado
@@ -1211,13 +1227,16 @@
         </div>
 
         <div class="filter-chips-bar" id="category-filter-chips"></div>
+        <div style="padding: 6px 18px; flex-shrink: 0;">
+            <input type="search" id="list-search" class="form-input" aria-label="Procurar na lista" placeholder="Procurar na lista">
+        </div>
 
         <!-- Conteúdo rolável: grupos dinâmicos de itens e mensagem mostrada quando a lista/filtro está vazio. -->
         <main class="app-content" id="list-container">
             <div id="pending-items-group"></div>
 
             <div id="purchased-section" style="display: none;">
-                <div class="section-header clickable" id="toggle-purchased-btn">
+                <div class="section-header clickable" id="toggle-purchased-btn" role="button" tabindex="0" aria-label="Mostrar ou recolher comprados">
                     <span id="purchased-header-title">Comprados (0)</span>
                     <svg id="purchased-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
@@ -1242,14 +1261,13 @@
             <div class="suggestion-chips" id="quick-chips"></div>
 
             <div class="input-row">
-                <input 
-                    type="text" 
+                <textarea rows="1"
                     id="quick-input" aria-label="Adicionar produto" 
                     class="quick-input" 
                     placeholder="Adicionar item (ex: 2 Leite, 1kg Banana, Café 16,90)..." 
                     autocomplete="off"
                     enterkeyhint="done"
-                >
+                ></textarea>
                 <button class="btn-add" id="btn-quick-add" title="Adicionar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -1257,7 +1275,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="toast-snack" id="toast">
+            <div class="toast-snack" id="toast" role="status" aria-live="polite">
                 <span id="toast-msg">Item comprado</span>
                 <button class="toast-undo" id="btn-undo">Desfazer</button>
             </div>
@@ -1265,7 +1283,7 @@
 
         <!-- Formulário de edição; os IDs dos campos são lidos e atualizados pelas funções de edição. -->
         <div class="modal-overlay" id="edit-modal">
-            <div class="bottom-sheet">
+            <div class="bottom-sheet" role="dialog" aria-modal="true" aria-label="Editar produto">
                 <div class="sheet-handle"></div>
                 <div class="sheet-header">
                     <h2 class="sheet-title">Editar Produto</h2>
@@ -1302,9 +1320,11 @@
                             <option value="g">g</option>
                             <option value="pct">pct</option>
                             <option value="lt">lt</option>
+                            <option value="ml">mL</option>
                             <option value="cx">cx</option>
                             <option value="dz">dz</option>
                         </select>
+                        <output id="edit-subtotal" aria-live="polite"></output>
                     </div>
                 </div>
 
@@ -1312,8 +1332,15 @@
 
                 <div class="form-row">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label" for="edit-price">Preço Unitário (R$)</label>
+                        <label class="form-label" for="edit-price">Preço (R$)</label>
                         <input type="number" step="0.01" min="0" id="edit-price" class="form-input" placeholder="0,00">
+                        <label class="form-label" for="edit-price-basis">Referência do preço</label>
+                        <select id="edit-price-basis" class="form-select">
+                            <option value="pending">Confirmar referência</option>
+                            <option value="unit">Por unidade informada</option>
+                            <option value="kg">Por kg</option>
+                            <option value="total">Total do item/pacote</option>
+                        </select>
                     </div>
 
                     <div class="form-group" style="flex: 1.2;">
@@ -1348,7 +1375,7 @@
 
         <!-- Gerenciador de listas; cada cartão é criado em lists-container e aceita seleção ou arraste. -->
         <div class="modal-overlay" id="lists-modal">
-            <div class="bottom-sheet">
+            <div class="bottom-sheet" role="dialog" aria-modal="true" aria-label="Minhas listas">
                 <div class="sheet-handle"></div>
                 <div class="sheet-header">
                     <h2 class="sheet-title">Minhas Listas</h2>
@@ -1361,6 +1388,32 @@
                 </div>
 
                 <div id="lists-container" style="margin-bottom: 16px;"></div>
+                <button type="button" class="btn-secondary" id="prepare-next">Preparar próxima compra</button>
+                <button type="button" class="btn-secondary" id="complete-prices">Completar preços pendentes</button>
+                <button type="button" class="btn-secondary" id="duplicate-list">Duplicar lista ativa</button>
+                <div id="next-options" hidden>
+                    <p>Escolha os produtos para a próxima compra:</p>
+                    <div id="next-products"></div>
+                    <label><input type="checkbox" id="next-keep-prices"> Manter preços como estimativas anteriores</label>
+                    <button type="button" class="btn-primary" id="next-confirm">Continuar com os selecionados</button>
+                    <button type="button" class="btn-secondary" id="next-cancel">Cancelar</button>
+                </div>
+                <p>Guarde uma cópia para recuperar suas listas em outro aparelho. Seus dados ficam neste navegador.</p>
+                <button type="button" class="btn-secondary" id="backup-export">Fazer cópia de segurança</button>
+                <label class="form-label" for="backup-import">Restaurar cópia de segurança</label>
+                <input type="file" id="backup-import" accept="application/json,.json">
+                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                    <input type="checkbox" id="comfort-mode"> Modo Confortável: letras e botões maiores
+                </label>
+                <label style="display:block"><input type="checkbox" id="hide-price"> Ocultar preços nos cartões</label>
+                <label style="display:block"><input type="checkbox" id="hide-category"> Ocultar categorias nos cartões</label>
+                <label style="display:block"><input type="checkbox" id="hide-suggestions"> Ocultar recomendações</label>
+                <details>
+                    <summary>Como usar os gestos</summary>
+                    <p>Toque no produto para marcar ou desmarcar a compra. Use o lápis para editar; segurar o cartão também abre a edição.</p>
+                    <p>Arraste o cartão para o lado para excluir. O aviso permite desfazer. Nas recomendações, use o × para ocultar ou arraste até a lixeira.</p>
+                    <p>As categorias e recomendações podem ser roladas para os lados.</p>
+                </details>
 
                 <div class="form-group">
                     <label class="form-label" for="new-list-name">Criar nova lista</label>
@@ -1454,7 +1507,8 @@
                 { id: '7', listId: 'list_1', name: 'Papel Higiênico', quantity: 1, unit: 'pct', price: 24.50, category: 'Higiene', note: '12 rolos', purchased: true }
             ],
             purchaseHistory: [],
-            registrationHistory: []
+            registrationHistory: [],
+            hiddenRecommendations: []
         };
 
         // Último estado confirmado: permite desfazer alterações em memória se o navegador recusar a gravação.
@@ -1463,6 +1517,8 @@
 
         // Dados temporários da ação Desfazer e da apresentação da seção de itens comprados.
         let lastToggledItemId = null;
+        // Recuperação vinculada ao aviso atual, sem misturar exclusão e marcação de compra.
+        let undoAction = null;
         let lastToggledPurchaseHistoryId = null;
         let undoTimeout = null;
         let purchasedCollapsed = false;
@@ -1661,6 +1717,12 @@
         function initPurchaseHistory() {
             if (!Array.isArray(appData.purchaseHistory)) appData.purchaseHistory = [];
             if (!Array.isArray(appData.registrationHistory)) appData.registrationHistory = [];
+            if (!Array.isArray(appData.hiddenRecommendations)) appData.hiddenRecommendations = [];
+        }
+
+        /** Mantém marca/observação e unidade na identidade dos atalhos. */
+        function recommendationKey(item) {
+            return JSON.stringify([normalizeProductNameForMatching(cleanProductName(item.name)), normalizeText(item.note), item.unit || 'un']);
         }
 
         /** Registra uma compra no histórico oculto que alimenta as recomendações recorrentes. */
@@ -1669,6 +1731,8 @@
                 id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
                 itemId: item.id,
                 name: cleanProductName(item.name),
+                note: item.note || '',
+                unit: item.unit || 'un',
                 category: item.category || 'Outros',
                 purchasedAt: Date.now()
             };
@@ -1687,42 +1751,46 @@
          * `saved`, `parsed` e `validData` separam leitura, conversão JSON e validação; `changed` marca correções aplicadas.
          * Se os dados forem inválidos, mantém o conteúdo salvo intacto e impede que uma gravação posterior o sobrescreva.
          */
+        /** Validação compartilhada pelo carregamento e pela restauração. */
+        function isValidAppData(parsed) {
+            return parsed &&
+                        Array.isArray(parsed.lists) &&
+                        parsed.lists.length > 0 &&
+                        new Set(parsed.lists.map(list => list && list.id)).size === parsed.lists.length &&
+                        parsed.lists.every(list => list && list.id != null && typeof list.name === 'string') &&
+                        parsed.lists.some(list => list.id === parsed.activeListId) &&
+                        Array.isArray(parsed.items) &&
+                        (parsed.hiddenRecommendations == null || (Array.isArray(parsed.hiddenRecommendations) && parsed.hiddenRecommendations.every(name => typeof name === 'string'))) &&
+                        new Set(parsed.items.map(item => item && item.id)).size === parsed.items.length &&
+                        parsed.items.every(item => item && item.id != null && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId) &&
+                            Number.isFinite(item.quantity) && item.quantity > 0 &&
+                            Number.isFinite(item.price) && item.price >= 0 &&
+                            (item.priceKnown == null || typeof item.priceKnown === 'boolean') &&
+                            (item.priceBasis == null || ['pending', 'unit', 'kg', 'total'].includes(item.priceBasis)) &&
+                            ['unit', 'category', 'note'].every(field => item[field] == null || typeof item[field] === 'string') &&
+                            (item.purchased == null || typeof item.purchased === 'boolean')) &&
+                        (parsed.purchaseHistory == null || (Array.isArray(parsed.purchaseHistory) && parsed.purchaseHistory.every(entry =>
+                            entry && entry.id != null && entry.itemId != null && typeof entry.name === 'string' &&
+                            ['note', 'unit'].every(field => entry[field] == null || typeof entry[field] === 'string') &&
+                            (entry.category == null || typeof entry.category === 'string') && Number.isFinite(entry.purchasedAt)
+                        ))) &&
+                        (parsed.registrationHistory == null || (Array.isArray(parsed.registrationHistory) && parsed.registrationHistory.every(entry =>
+                            entry && typeof entry.name === 'string' && typeof entry.category === 'string' && Number.isFinite(entry.purchasedAt)
+                            && ['note', 'unit'].every(field => entry[field] == null || typeof entry[field] === 'string')
+                        )));
+        }
+
         function loadData() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved !== null) {
                     const parsed = JSON.parse(saved);
-                    const validData = parsed &&
-                        Array.isArray(parsed.lists) &&
-                        parsed.lists.length > 0 &&
-                        parsed.lists.every(list => list && list.id != null && typeof list.name === 'string') &&
-                        parsed.lists.some(list => list.id === parsed.activeListId) &&
-                        Array.isArray(parsed.items) &&
-                        parsed.items.every(item => item && item.id != null && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId) &&
-                            (item.quantity == null || (Number.isFinite(item.quantity) && item.quantity > 0)) &&
-                            (item.price == null || (Number.isFinite(item.price) && item.price >= 0)) &&
-                            ['unit', 'category', 'note'].every(field => item[field] == null || typeof item[field] === 'string') &&
-                            (item.purchased == null || typeof item.purchased === 'boolean')) &&
-                        (parsed.purchaseHistory == null || (Array.isArray(parsed.purchaseHistory) && parsed.purchaseHistory.every(entry =>
-                            entry && entry.id != null && entry.itemId != null && typeof entry.name === 'string' &&
-                            (entry.category == null || typeof entry.category === 'string') && Number.isFinite(entry.purchasedAt)
-                        ))) &&
-                        (parsed.registrationHistory == null || (Array.isArray(parsed.registrationHistory) && parsed.registrationHistory.every(entry =>
-                            entry && typeof entry.name === 'string' && typeof entry.category === 'string' && Number.isFinite(entry.purchasedAt)
-                        )));
+                    const validData = isValidAppData(parsed);
 
                     if (validData) {
                         appData = parsed;
                         initPurchaseHistory();
                         lastSavedData = JSON.stringify(appData);
-                        let changed = false;
-                        appData.items.forEach(item => {
-                            if (/rtx|placa|teclado|mouse|fone|cabo|carregador/i.test(item.name) && item.category === 'Mercearia') {
-                                item.category = 'Outros';
-                                changed = true;
-                            }
-                        });
-                        if (changed && !saveData()) showToast(SAVE_ERROR_MESSAGE);
                     } else {
                         dataLoadFailed = true;
                         console.warn('Dados locais inválidos; mantendo o conteúdo salvo sem sobrescrevê-lo.');
@@ -1811,6 +1879,17 @@
             return Number(amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
+        /** Retorna null quando o preço ou sua referência ainda precisa ser confirmado. */
+        function itemSubtotal(item) {
+            if (!(item.priceKnown === true || item.price > 0)) return null;
+            const basis = item.priceBasis || (['g', 'kg', 'ml', 'lt'].includes(item.unit) ? 'pending' : 'unit');
+            if (basis === 'pending') return null;
+            if (basis === 'total') return item.price;
+            if (basis === 'kg' && !['g', 'kg'].includes(item.unit)) return null;
+            const quantity = basis === 'kg' && item.unit === 'g' ? item.quantity / 1000 : item.quantity;
+            return Math.round((item.price * quantity + Number.EPSILON) * 100) / 100;
+        }
+
         /**
          * Recria os filtros a partir das categorias que têm produtos na lista ativa.
          * `container` recebe os botões, `items` e `pendingItems` sustentam as contagens,
@@ -1876,18 +1955,20 @@
             const pendingMap = new Map();
             currentItems.forEach(i => {
                 if (!i.purchased && i.name) {
-                    pendingMap.set(normalizeProductNameForMatching(i.name), i);
+                    pendingMap.set(recommendationKey(i), i);
                 }
             });
 
             // O histórico é oculto: sua frequência e data da última compra determinam a ordem das recorrências.
             const products = new Map();
-            const registeredNames = new Set(appData.registrationHistory.map(entry => normalizeProductNameForMatching(cleanProductName(entry.name))));
-            [...appData.registrationHistory, ...appData.purchaseHistory.filter(entry => !registeredNames.has(normalizeProductNameForMatching(cleanProductName(entry.name))))].forEach(entry => {
+            const registeredNames = new Set(appData.registrationHistory.map(recommendationKey));
+            [...appData.registrationHistory, ...appData.purchaseHistory.filter(entry => !registeredNames.has(recommendationKey(entry)))].forEach(entry => {
                 const clean = cleanProductName(entry.name);
-                const key = normalizeProductNameForMatching(clean);
+                const key = recommendationKey(entry);
                 const product = products.get(key) || {
                     name: clean,
+                    note: entry.note || '',
+                    unit: entry.unit || 'un',
                     category: entry.category || 'Outros',
                     isRecurring: true,
                     count: 0,
@@ -1907,13 +1988,22 @@
                 .slice(0, 16);
             const displaySuggestions = [
                 ...recurringSuggestions,
-                ...defaultSuggestions.filter(product => !products.has(normalizeProductNameForMatching(product.name)))
+                ...defaultSuggestions.filter(product => !products.has(recommendationKey(product)))
             ];
             container.style.display = displaySuggestions.length ? 'flex' : 'none';
 
-            displaySuggestions.forEach(prod => {
+            displaySuggestions.filter(prod => !(appData.hiddenRecommendations || []).some(key => key === recommendationKey(prod) || key === normalizeProductNameForMatching(cleanProductName(prod.name)))).forEach(prod => {
                 const clean = cleanProductName(prod.name);
-                const key = normalizeProductNameForMatching(clean);
+                const key = recommendationKey(prod);
+                const hideRecommendation = () => {
+                    appData.hiddenRecommendations ||= [];
+                    if (!appData.hiddenRecommendations.includes(key)) appData.hiddenRecommendations.push(key);
+                    const saved = saveData();
+                    renderQuickChips();
+                    showToast(saved ? 'Recomendação ocultada' : SAVE_ERROR_MESSAGE, saved, () => {
+                        appData.hiddenRecommendations = appData.hiddenRecommendations.filter(name => name !== key);
+                    });
+                };
                 const isPending = pendingMap.has(key);
                 const pendingItem = pendingMap.get(key);
 
@@ -1921,7 +2011,7 @@
                 chip.type = 'button';
                 chip.className = `chip ${isPending ? 'chip-in-list' : ''}`;
                 if (prod.isRecurring) chip.classList.add('chip-recurring');
-                chip.textContent = `${getProductIcon(clean, prod.category)} ${clean}`;
+                chip.textContent = `${getProductIcon(clean, prod.category)} ${clean}${prod.note ? ` (${prod.note})` : ''}`;
                 chip.title = clean;
                 chip.setAttribute('aria-label', `Adicionar ${clean} à lista`);
 
@@ -2012,11 +2102,7 @@
                         if (wasDragging) suppressNextClick();
                         if (!dropOnTrash) return;
 
-                        appData.purchaseHistory = appData.purchaseHistory.filter(entry => normalizeProductNameForMatching(cleanProductName(entry.name)) !== key);
-                        appData.registrationHistory = appData.registrationHistory.filter(entry => normalizeProductNameForMatching(cleanProductName(entry.name)) !== key);
-                        const saved = saveData();
-                        renderQuickChips();
-                        showToast(saved ? 'Recomendação recorrente removida' : SAVE_ERROR_MESSAGE);
+                        hideRecommendation();
                     });
                     // Cancelamentos do navegador ou do aparelho nunca excluem o histórico.
                     chip.addEventListener('pointercancel', e => {
@@ -2036,7 +2122,8 @@
                         return;
                     }
                     if (isPending && pendingItem) {
-                        pendingItem.quantity = Math.round(((pendingItem.quantity || 1) + 1) * 10) / 10;
+                        if (['g', 'kg', 'lt', 'ml'].includes(pendingItem.unit)) { openEditModal(pendingItem.id); return; }
+                        pendingItem.quantity = Math.round(((pendingItem.quantity || 1) + 1) * 1000) / 1000;
                         const saved = saveData();
                         renderList();
                         renderQuickChips();
@@ -2047,10 +2134,10 @@
                             listId: appData.activeListId,
                             name: clean,
                             quantity: 1,
-                            unit: 'un',
+                            unit: prod.unit || 'un',
                             price: 0,
                             category: prod.category || 'Outros',
-                            note: '',
+                            note: prod.note || '',
                             purchased: false
                         };
                         appData.items.unshift(newItem);
@@ -2064,9 +2151,18 @@
                         renderList();
                         renderQuickChips();
                         showToast(saved ? `"${clean}" adicionado à lista` : SAVE_ERROR_MESSAGE);
+                        if (saved && ['g', 'kg', 'lt', 'ml'].includes(newItem.unit)) openEditModal(newItem.id);
                     }
                 });
                 container.appendChild(chip);
+                const hideButton = document.createElement('button');
+                hideButton.type = 'button';
+                hideButton.className = 'chip';
+                hideButton.textContent = '×';
+                hideButton.setAttribute('aria-label', `Ocultar recomendação ${clean}`);
+                hideButton.title = 'Ocultar recomendação';
+                hideButton.addEventListener('click', hideRecommendation);
+                container.appendChild(hideButton);
             });
         }
 
@@ -2100,6 +2196,8 @@
             if (activeCategoryFilter !== 'Todos') {
                 displayItems = allItems.filter(i => i.category === activeCategoryFilter);
             }
+            const search = normalizeText(document.getElementById('list-search').value);
+            if (search) displayItems = displayItems.filter(item => normalizeText(`${item.name} ${item.note || ''}`).includes(search));
 
             const pendingItems = displayItems.filter(i => !i.purchased);
             const purchasedItems = displayItems.filter(i => i.purchased);
@@ -2108,50 +2206,35 @@
             const purchasedGroup = document.getElementById('purchased-items-group');
             const purchasedSection = document.getElementById('purchased-section');
             const emptyState = document.getElementById('empty-state');
+            emptyState.querySelectorAll('.state-action').forEach(button => button.remove());
 
             pendingGroup.innerHTML = '';
             purchasedGroup.innerHTML = '';
 
-            // O total geral permanece baseado em todos os pendentes, inclusive quando um filtro está selecionado.
-            let totalEstimate = 0;
-            allItems.filter(i => !i.purchased).forEach(item => {
-                if (item.price && item.quantity) {
-                    totalEstimate += (item.price * item.quantity);
-                }
-            });
-
-            if (activeCategoryFilter === 'Todos') {
-                const pendingCount = allItems.filter(i => !i.purchased).length;
-                document.getElementById('totals-count-text').textContent = 
-                    `${pendingCount} ${pendingCount === 1 ? 'item pendente' : 'itens pendentes'}`;
-                document.getElementById('totals-price-val').textContent = `Total: ${formatMoney(totalEstimate)}`;
-            } else {
-                let filterEstimate = 0;
-                displayItems.filter(i => !i.purchased).forEach(item => {
-                    if (item.price && item.quantity) {
-                        filterEstimate += (item.price * item.quantity);
-                    }
-                });
-                document.getElementById('totals-count-text').textContent = 
-                    `${pendingItems.length} em ${activeCategoryFilter}`;
-                document.getElementById('totals-price-val').textContent = `${activeCategoryFilter}: ${formatMoney(filterEstimate)}`;
-            }
+            document.getElementById('totals-count-text').textContent = `${pendingItems.length} ${activeCategoryFilter === 'Todos' ? 'itens pendentes' : 'em ' + activeCategoryFilter}`;
+            // O resumo usa os mesmos pendentes visíveis; preço vazio não significa produto gratuito.
+            const missingPrices = pendingItems.filter(item => itemSubtotal(item) === null).length;
+            const visibleTotal = pendingItems.reduce((total, item) => total + (itemSubtotal(item) || 0), 0);
+            document.getElementById('totals-price-val').textContent = `${missingPrices ? 'Total parcial' : 'Falta comprar'}: ${formatMoney(visibleTotal)}`;
+            if (missingPrices) document.getElementById('totals-count-text').textContent += ` · ${missingPrices} sem preço`;
 
             if (allItems.length === 0) {
                 emptyState.style.display = 'flex';
-                emptyState.querySelector('h3').textContent = 'Lista Vazia';
-                emptyState.querySelector('p').textContent = 'Digite um produto abaixo para começar a sua lista de compras.';
+                emptyState.querySelector('h3').textContent = 'Sua lista está vazia';
+                emptyState.querySelector('p').textContent = 'Adicione o primeiro produto abaixo ou escolha uma sugestão.';
                 purchasedSection.style.display = 'none';
                 return;
             } else if (displayItems.length === 0) {
                 emptyState.style.display = 'flex';
-                emptyState.querySelector('h3').textContent = `Nenhum item em ${activeCategoryFilter}`;
+                emptyState.querySelector('h3').textContent = search ? 'Nenhum produto encontrado' : `Nenhum item em ${activeCategoryFilter}`;
                 emptyState.querySelector('p').innerHTML = `Não há produtos cadastrados nesta categoria.<br><a href="#" id="btn-clear-filter" style="color: var(--primary); font-weight: 600; text-decoration: underline; display: inline-block; margin-top: 6px;">Ver todos os itens</a>`;
+                if (search) emptyState.querySelector('p').innerHTML = 'Revise o nome ou a observação.<br><a href="#" id="btn-clear-filter">Limpar busca e ver todos</a>';
                 const clearBtn = document.getElementById('btn-clear-filter');
                 if (clearBtn) {
                     clearBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         activeCategoryFilter = 'Todos';
+                        document.getElementById('list-search').value = '';
                         renderFilterChips();
                         renderList();
                     });
@@ -2160,6 +2243,21 @@
                 return;
             } else {
                 emptyState.style.display = 'none';
+            }
+
+            if (pendingItems.length === 0 && purchasedItems.length > 0) {
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('h3').textContent = activeCategoryFilter === 'Todos' ? 'Todos os itens foram marcados como comprados.' : 'Não restam pendências nesta categoria.';
+                emptyState.querySelector('p').textContent = 'Os produtos continuam disponíveis em Comprados.';
+                const addAction = (label, action) => {
+                    const button = document.createElement('button');
+                    button.type = 'button'; button.className = 'btn-secondary state-action';
+                    button.textContent = label; button.addEventListener('click', action);
+                    emptyState.appendChild(button);
+                };
+                addAction('Rever comprados', () => { purchasedCollapsed = false; renderList(); document.getElementById('purchased-section').scrollIntoView({ block: 'nearest' }); });
+                addAction('Preparar próxima compra', () => { document.getElementById('btn-select-list').click(); chooseNextProducts(false); });
+                if (activeCategoryFilter !== 'Todos') addAction('Ver todos', () => { activeCategoryFilter = 'Todos'; renderFilterChips(); renderList(); });
             }
 
             pendingItems.forEach(item => {
@@ -2183,12 +2281,18 @@
 
         /** Exclui um produto pelo ID, grava, atualiza todas as áreas dependentes e mostra o resultado do salvamento. */
         function deleteItem(itemId) {
+            const index = appData.items.findIndex(i => i.id === itemId);
+            if (index < 0) return;
+            const removed = { ...appData.items[index] };
             appData.items = appData.items.filter(i => i.id !== itemId);
             const saved = saveData();
             renderFilterChips();
             renderList();
             renderQuickChips();
-            showToast(saved ? 'Produto removido' : SAVE_ERROR_MESSAGE);
+            showToast(saved ? 'Produto removido' : SAVE_ERROR_MESSAGE, saved, () => {
+                if (!appData.lists.some(list => list.id === removed.listId)) return;
+                if (!appData.items.some(item => item.id === removed.id)) appData.items.splice(index, 0, removed);
+            });
         }
 
         /**
@@ -2407,17 +2511,42 @@
             qPill.textContent = `${item.quantity} ${item.unit || 'un'}`;
             pricingDiv.appendChild(qPill);
 
-            if (item.price && item.price > 0) {
-                const priceTotal = (item.price * (item.quantity || 1));
+            if (item.priceKnown === true || item.price > 0) {
+                const priceTotal = itemSubtotal(item);
                 const priceEl = document.createElement('div');
                 priceEl.className = 'item-price-val';
-                priceEl.textContent = formatMoney(priceTotal);
+                priceEl.textContent = priceTotal === null ? 'Confirmar preço' : `${formatMoney(priceTotal)}${item.priceEstimate ? ' (anterior)' : ''}`;
                 pricingDiv.appendChild(priceEl);
+                if (priceTotal !== null) {
+                    const reference = document.createElement('small');
+                    reference.className = 'item-price-reference';
+                    reference.style.color = 'var(--text-secondary)';
+                    reference.textContent = item.priceBasis === 'total' ? 'total do item' : `${formatMoney(item.price)}/${item.priceBasis === 'kg' ? 'kg' : item.unit || 'un'}`;
+                    pricingDiv.appendChild(reference);
+                }
+            } else {
+                const unknownPrice = document.createElement('small');
+                unknownPrice.className = 'item-price-reference';
+                unknownPrice.style.color = 'var(--text-secondary)';
+                unknownPrice.textContent = 'Sem preço';
+                pricingDiv.appendChild(unknownPrice);
             }
 
             card.appendChild(checkBtn);
             card.appendChild(infoDiv);
             card.appendChild(pricingDiv);
+            const editButton = document.createElement('button');
+            editButton.type = 'button';
+            editButton.className = 'btn-icon';
+            editButton.textContent = '✎';
+            editButton.setAttribute('aria-label', `Editar ${item.name}`);
+            editButton.title = 'Editar produto';
+            editButton.addEventListener('pointerdown', event => event.stopPropagation());
+            editButton.addEventListener('click', event => {
+                event.stopPropagation();
+                openEditModal(item.id);
+            });
+            card.appendChild(editButton);
 
             shell.appendChild(deleteTrail);
             shell.appendChild(card);
@@ -2435,8 +2564,10 @@
             if (item.purchased) {
                 lastToggledItemId = itemId;
                 lastToggledPurchaseHistoryId = recordProductPurchase(item);
+                item.currentPurchaseHistoryId = lastToggledPurchaseHistoryId;
             } else {
-                appData.purchaseHistory = appData.purchaseHistory.filter(entry => entry.itemId !== item.id);
+                removePurchaseHistoryEntry(item.currentPurchaseHistoryId);
+                delete item.currentPurchaseHistoryId;
                 lastToggledItemId = null;
                 lastToggledPurchaseHistoryId = null;
             }
@@ -2449,7 +2580,8 @@
         }
 
         /** Mostra um aviso temporário; o botão Desfazer só aparece quando a ação permite reversão. */
-        function showToast(msg, showUndo = false) {
+        function showToast(msg, showUndo = false, action = null) {
+            undoAction = showUndo ? action : null;
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-msg');
             const btnUndo = document.getElementById('btn-undo');
@@ -2461,17 +2593,27 @@
             if (undoTimeout) clearTimeout(undoTimeout);
             undoTimeout = setTimeout(() => {
                 toast.classList.remove('show');
+                undoAction = null;
             }, 3500);
         }
 
         // Reverte a última marcação de compra e remove o registro correspondente do histórico oculto.
         document.getElementById('btn-undo').addEventListener('click', () => {
             let saved = true;
-            if (lastToggledItemId) {
+            if (undoAction) {
+                const action = undoAction;
+                undoAction = null;
+                action();
+                saved = saveData();
+                renderFilterChips();
+                renderList();
+                renderQuickChips();
+            } else if (lastToggledItemId) {
                 const item = appData.items.find(i => i.id === lastToggledItemId);
                 if (item) {
                     item.purchased = false;
                     removePurchaseHistoryEntry(lastToggledPurchaseHistoryId);
+                    delete item.currentPurchaseHistoryId;
                     saved = saveData();
                     renderFilterChips();
                     renderList();
@@ -2493,12 +2635,16 @@
          */
         function parseQuickInput(rawText, customId = null) {
             let text = rawText.trim();
-            if (!text) return null;
+            if (!text || /^-?0(?:[.,]0+)?\s|^-\d/.test(text) || /(?:^|\s)(?:r\$\s*)?-\d+(?:[.,]\d+)?\s*(?:reais|real)?$/i.test(text)) return null;
 
             let quantity = 1;
             let unit = 'un';
             let price = 0;
+            let priceKnown = false;
             const notes = [];
+            // Quantidade ao final só é reconhecida com unidade explícita, sem confundir embalagem e preço.
+            const trailingCount = text.match(/^(.+?)\s+(\d+)\s+unidades?$/i);
+            if (trailingCount) text = `${trailingCount[2]} un ${trailingCount[1]}`;
 
             // `promoRegex` detecta a condição mesmo quando a palavra não está no fim; `trailingPromo` também a remove do nome.
             const promoRegex = /\b(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\b/i;
@@ -2520,17 +2666,23 @@
             }
 
             // Primeiro tenta preço ligado a promoção; `priceMatch` cobre as formas gerais no fim do trecho.
+            // Valores brasileiros com milhar são convertidos antes da extração para não perder a parte inteira.
+            text = text.replace(/\b\d{1,3}(?:\.\d{3})+,\d{2}(?=\s*(?:reais|real|r\$|rs|\$)?\s*$)/i, value => value.replace(/\./g, ''));
             const promoPriceMatch = text.match(/(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\s*(?:de|por|a)?\s*(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)?\s*$/i);
             if (promoPriceMatch) {
                 price = parseFloat(promoPriceMatch[1].replace(',', '.'));
+                priceKnown = true;
                 text = text.substring(0, text.length - promoPriceMatch[0].length).trim();
                 text = text.replace(/[-–—,:]$/, '').trim();
             } else {
                 const priceMatch = text.match(/(?:(?:r\$|rs|\$)\s*(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)|\b(?:por|a|de)\s+(\d+(?:[.,]\d{1,2})?)|(\d+[.,]\d{2})|\s+(\d+(?:[.,]\d{1,2})?))\s*$/i);
-                if (priceMatch && (!priceMatch[5] || /[^\d\s]/.test(text.slice(0, priceMatch.index)))) {
+                const numberedDescription = /(?:\btipo\s+|\bem\s+|\b(?:rtx|gtx|iphone|galaxy)\s*)\d+\s*$/i.test(text);
+                if (priceMatch && !numberedDescription && (!priceMatch[5] || /[^\d\s]/.test(text.slice(0, priceMatch.index)))) {
                     const valStr = priceMatch[1] || priceMatch[2] || priceMatch[3] || priceMatch[4] || priceMatch[5];
                     price = parseFloat(valStr.replace(',', '.'));
+                    priceKnown = true;
                     text = text.substring(0, text.length - priceMatch[0].length).trim();
+                    text = text.replace(/\s+por$/i, '').trim();
                     text = text.replace(/[-–—,:]$/, '').trim();
                 }
             }
@@ -2580,11 +2732,12 @@
             text = text.replace(/[-–—,:]$/, '').trim();
 
             // Quantidade e unidade ficam antes do nome; `x` significa contagem e mantém unidade padrão `un`.
-            const prefixMatch = text.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|un|pct|lt|cx|x)?\s+(.+)$/i);
+            const prefixMatch = text.match(/^(\d+(?:[.,]\d+)?)\s*(quilogramas?|quilos?|gramas?|mililitros?|litros?|unidades?|pacotes?|caixas?|d[uú]zias?|kg|ml|lt|dz|pct|cx|un|g|l|x)?\s+(.+)$/i);
             if (prefixMatch) {
                 quantity = parseFloat(prefixMatch[1].replace(',', '.'));
                 if (prefixMatch[2] && prefixMatch[2].toLowerCase() !== 'x') {
-                    unit = prefixMatch[2].toLowerCase();
+                    const alias = normalizeText(prefixMatch[2]);
+                    unit = /^(kg|quilo)/.test(alias) ? 'kg' : /^(g|grama)/.test(alias) ? 'g' : /^(ml|mililitro)/.test(alias) ? 'ml' : /^(l|litro)/.test(alias) ? 'lt' : /^(dz|duzia)/.test(alias) ? 'dz' : /^(pct|pacote)/.test(alias) ? 'pct' : /^(cx|caixa)/.test(alias) ? 'cx' : 'un';
                 }
                 text = prefixMatch[3].trim();
             }
@@ -2593,6 +2746,7 @@
             const capitalizedName = text.charAt(0).toUpperCase() + text.slice(1);
 
             const finalNote = notes.join(' • ');
+            if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(price) || price < 0) return null;
 
             let category = 'Outros';
             const norm = normalizeProductNameForMatching(text);
@@ -2609,7 +2763,7 @@
                 category = 'Bebidas';
             } else if (/molho|extrato|ketchup|mostarda|maionese|barbecue|doce de leite|leite condensado|macarrao|espaguete|miojo|penne|parafuso|arroz|feijao|doritos|ruffles|cheetos|fandangos|batata palha|pipoca|chocolate|bombom|bala|chiclete/.test(norm)) {
                 category = 'Mercearia';
-            } else if (/\bleite\b|queijo|iogurte|manteiga|requeijao|nata|creme de leite|condensado|margarina|mussarela|mucarela|parmesao|cheddar|provolone|ricota|danone|yakult/.test(norm)) {
+            } else if (/\bovo\b|\bleite\b|queijo|iogurte|manteiga|requeijao|nata|creme de leite|condensado|margarina|mussarela|mucarela|parmesao|cheddar|provolone|ricota|danone|yakult/.test(norm)) {
                 category = 'Laticínios';
             } else if (/carne|frango|peixe|linguica|salsicha|alcatra|bife|costela|moida|bacon|picanha|contrafile|patinho|maminha|fraldinha|file|acem|cupim|sobrecoxa|peito de frango|asa|salmao|tilapia|bacalhau|atum|sardinha|camarao|polvo|lula|calabresa|presunto|mortadela|salame|copa/.test(norm)) {
                 category = 'Açougue';
@@ -2628,6 +2782,8 @@
                 quantity: quantity || 1,
                 unit: unit || 'un',
                 price: price || 0,
+                priceKnown,
+                priceBasis: ['g', 'kg', 'ml', 'lt'].includes(unit) ? 'pending' : 'unit',
                 category: category,
                 note: finalNote || '',
                 purchased: false
@@ -2704,20 +2860,31 @@
                 }
             });
 
-            if (newItems.length === 0) return;
+            if (newItems.length !== chunks.length) {
+                showToast('Revise os produtos: informe nome e quantidade maior que zero. O texto foi mantido.');
+                return;
+            }
 
             newItems.forEach((item, index) => {
-                appData.registrationHistory.push({ name: item.name, category: item.category, purchasedAt: Date.now() });
-                const explicitUnit = /^\s*\d+(?:[.,]\d+)?\s*(kg|g|un|pct|lt|cx)\s+/i.test(chunks[index]);
-                const existing = appData.items.find(existingItem =>
+                appData.registrationHistory.push({ name: item.name, note: item.note, unit: item.unit, category: item.category, purchasedAt: Date.now() });
+                const explicitUnit = /^\s*\d+(?:[.,]\d+)?\s*(quilogramas?|quilos?|gramas?|mililitros?|litros?|unidades?|pacotes?|caixas?|d[uú]zias?|kg|ml|lt|dz|pct|cx|un|g|l|x)\s+/i.test(chunks[index]) || /\d+\s+unidades?$/i.test(chunks[index]);
+                let existing = appData.items.find(existingItem =>
                     existingItem.listId === appData.activeListId && !existingItem.purchased &&
                     normalizeProductNameForMatching(existingItem.name) === normalizeProductNameForMatching(item.name) &&
+                    normalizeText(existingItem.note) === normalizeText(item.note) &&
+                    existingItem.priceBasis !== 'total' && item.priceBasis !== 'total' &&
+                    (!existingItem.priceBasis || !item.priceKnown || existingItem.priceBasis === item.priceBasis) &&
                     (!explicitUnit || (existingItem.unit || 'un') === item.unit)
                 );
+                const priceConflict = existing && item.priceKnown && (existing.priceKnown === true || existing.price > 0) && existing.price !== item.price;
+                if (priceConflict && !confirm(`O preço de ${item.name} já é ${formatMoney(existing.price)}. OK: somar mantendo esse preço. Cancelar: adicionar separado pelo novo preço.`)) existing = null;
                 if (existing) {
                     existing.quantity = Math.round(((existing.quantity || 1) + item.quantity) * 1000) / 1000;
-                    if (item.note) existing.note = [existing.note, item.note].filter(Boolean).join(' • ');
-                    if (item.price) existing.price = item.price;
+                    if (item.priceKnown && !priceConflict) {
+                        existing.price = item.price;
+                        existing.priceKnown = true;
+                        existing.priceBasis = item.priceBasis;
+                    }
                 } else {
                     appData.items.unshift(item);
                 }
@@ -2745,6 +2912,16 @@
                 showToast(SAVE_ERROR_MESSAGE);
             } else if (newItems.length > 1) {
                 showToast(`${newItems.length} itens adicionados!`);
+            }
+            if (saved) {
+                const ambiguous = newItems.find(item => item.priceKnown && item.priceBasis === 'pending');
+                if (ambiguous) {
+                    const target = getListItems().find(item => normalizeProductNameForMatching(item.name) === normalizeProductNameForMatching(ambiguous.name) && normalizeText(item.note) === normalizeText(ambiguous.note) && item.unit === ambiguous.unit && itemSubtotal(item) === null);
+                    if (target) {
+                        openEditModal(target.id);
+                        showToast('Confirme se o preço é por medida ou pelo total do item.');
+                    }
+                }
             }
         }
 
@@ -2835,6 +3012,7 @@
         }
 
         /** Preenche todos os campos com o produto existente antes de abrir a folha de edição. */
+        let completingPrices = false;
         function openEditModal(itemId) {
             const item = appData.items.find(i => i.id === itemId);
             if (!item) return;
@@ -2844,7 +3022,9 @@
             currentEditingQuantity = item.quantity || 1;
             document.getElementById('stepper-val').value = currentEditingQuantity;
             document.getElementById('edit-unit').value = item.unit || 'un';
-            document.getElementById('edit-price').value = item.price && item.price > 0 ? item.price : '';
+            document.getElementById('edit-unit').dataset.previousUnit = item.unit || 'un';
+            document.getElementById('edit-price-basis').value = item.priceBasis || (['g', 'kg', 'ml', 'lt'].includes(item.unit) ? 'pending' : 'unit');
+            document.getElementById('edit-price').value = item.priceKnown === true || item.price > 0 ? item.price : '';
             document.getElementById('edit-category').value = item.category || 'Mercearia';
             document.getElementById('edit-note').value = item.note || '';
 
@@ -2852,15 +3032,45 @@
 
             const modal = document.getElementById('edit-modal');
             modal.classList.add('active');
+            updateEditSubtotal();
         }
+
+        /** Mostra a conta antes de salvar, usando a mesma regra do cartão e do resumo. */
+        function updateEditSubtotal() {
+            const price = document.getElementById('edit-price').value;
+            const subtotal = itemSubtotal({ quantity: Number(document.getElementById('stepper-val').value),
+                unit: document.getElementById('edit-unit').value, price: Number(price), priceKnown: price !== '',
+                priceBasis: document.getElementById('edit-price-basis').value });
+            document.getElementById('edit-subtotal').textContent = subtotal === null ? 'Confirme o preço e sua referência.' : `Subtotal: ${formatMoney(subtotal)}`;
+        }
+        document.getElementById('edit-modal').addEventListener('input', updateEditSubtotal);
+        document.getElementById('edit-modal').addEventListener('change', updateEditSubtotal);
+        document.getElementById('edit-modal').addEventListener('click', updateEditSubtotal);
 
         /** Fecha a folha de edição sem alterar o produto. */
         function closeEditModal() {
+            completingPrices = false;
             document.getElementById('edit-modal').classList.remove('active');
         }
 
         // Mudanças de unidade atualizam os atalhos de peso e o tamanho do passo do contador.
-        document.getElementById('edit-unit').addEventListener('change', () => {
+        document.getElementById('edit-unit').addEventListener('change', event => {
+            const control = event.target;
+            const previous = control.dataset.previousUnit;
+            const scales = { g: 1, kg: 1000, ml: 1, lt: 1000 };
+            const equivalent = ['g', 'kg'].includes(previous) && ['g', 'kg'].includes(control.value) || ['ml', 'lt'].includes(previous) && ['ml', 'lt'].includes(control.value);
+            if (equivalent) {
+                const factor = scales[previous] / scales[control.value];
+                currentEditingQuantity = Number(document.getElementById('stepper-val').value) * factor;
+                document.getElementById('stepper-val').value = currentEditingQuantity;
+                const price = document.getElementById('edit-price');
+                if (price.value !== '' && document.getElementById('edit-price-basis').value === 'unit') price.value = Number(price.value) / factor;
+                showToast('Quantidade convertida para manter a mesma medida.');
+            } else if (previous !== control.value) {
+                document.getElementById('edit-price-basis').value = 'pending';
+                showToast('Revise a quantidade e a referência do preço para a nova unidade.');
+            }
+            control.dataset.previousUnit = control.value;
             updateWeightPresetsUI();
         });
 
@@ -2915,7 +3125,7 @@
             const inputQty = parseFloat(document.getElementById('stepper-val').value);
             const priceInput = document.getElementById('edit-price').value.trim();
             const priceVal = priceInput === '' ? 0 : Number(priceInput);
-            if (!Number.isFinite(priceVal) || priceVal < 0 || (Number.isFinite(inputQty) && inputQty <= 0) || inputQty === Infinity) {
+            if (!Number.isFinite(priceVal) || priceVal < 0 || !Number.isFinite(inputQty) || inputQty <= 0) {
                 alert('Informe uma quantidade maior que zero e um preço válido, sem valor negativo.');
                 return;
             }
@@ -2923,6 +3133,9 @@
             item.name = name;
             item.unit = document.getElementById('edit-unit').value;
             item.price = priceVal;
+            item.priceBasis = document.getElementById('edit-price-basis').value;
+            item.priceKnown = priceInput !== '';
+            item.priceEstimate = false;
             item.category = document.getElementById('edit-category').value;
             item.note = document.getElementById('edit-note').value.trim();
 
@@ -2932,6 +3145,17 @@
             renderQuickChips();
             if (!saved) {
                 alert(SAVE_ERROR_MESSAGE);
+                return;
+            }
+            if (completingPrices) {
+                if (itemSubtotal(item) === null) {
+                    showToast('Confirme o preço e sua referência para continuar.');
+                    return;
+                }
+                const next = getListItems().find(product => !product.purchased && itemSubtotal(product) === null);
+                if (next) { openEditModal(next.id); return; }
+                closeEditModal();
+                showToast('Preços dos pendentes preenchidos');
                 return;
             }
             closeEditModal();
@@ -2947,6 +3171,124 @@
 
         // Referência reaproveitada para abrir/fechar o seletor de listas.
         const listsModal = document.getElementById('lists-modal');
+        document.getElementById('complete-prices').addEventListener('click', () => {
+            const item = getListItems().find(item => !item.purchased && itemSubtotal(item) === null);
+            if (!item) { showToast('Todos os pendentes têm preço confirmado.'); return; }
+            completingPrices = true;
+            listsModal.classList.remove('active');
+            openEditModal(item.id);
+        });
+        /** Reutiliza os produtos sem modificar o histórico de hábitos. */
+        function prepareNextPurchase(copy, selection = null) {
+            const items = getListItems().filter(item => !selection || selection.has(String(item.id)));
+            if (!items.length) { showToast('A lista está vazia.'); return; }
+            const name = copy ? prompt('Nome da cópia:', `${getActiveList().name} — cópia`) : null;
+            if (copy && !name?.trim()) return;
+            const keepPrices = document.getElementById('next-keep-prices').checked;
+            if (!confirm(`${copy ? 'Copiar' : 'Reativar'} ${items.length} produtos? ${keepPrices ? 'Preços serão estimativas anteriores.' : 'Preços serão removidos para preencher os valores da próxima compra.'}`)) return;
+            const listId = copy ? `list-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` : appData.activeListId;
+            if (copy) appData.lists.push({ id: listId, name: name.trim() });
+            items.forEach((item, index) => {
+                const target = copy ? { ...item, id: `${listId}-${index}`, listId } : item;
+                target.purchased = false;
+                delete target.currentPurchaseHistoryId;
+                target.priceEstimate = keepPrices && (target.priceKnown === true || target.price > 0);
+                if (!keepPrices) { target.price = 0; target.priceKnown = false; }
+                if (copy) appData.items.push(target);
+            });
+            appData.activeListId = listId;
+            const saved = saveData();
+            document.getElementById('next-options').hidden = true;
+            activeCategoryFilter = 'Todos';
+            document.getElementById('list-search').value = '';
+            renderListsManager(); renderFilterChips(); renderList(); renderQuickChips();
+            showToast(saved ? 'Próxima compra preparada' : SAVE_ERROR_MESSAGE);
+        }
+        let nextPurchaseCopy = false;
+        function chooseNextProducts(copy) {
+            nextPurchaseCopy = copy;
+            const container = document.getElementById('next-products');
+            container.replaceChildren();
+            getListItems().forEach(item => {
+                const label = document.createElement('label');
+                label.style.display = 'block';
+                const input = document.createElement('input');
+                input.type = 'checkbox'; input.value = item.id; input.checked = true;
+                label.append(input, ` ${item.name} · ${item.quantity} ${item.unit}`);
+                container.append(label);
+            });
+            document.getElementById('next-keep-prices').checked = false;
+            document.getElementById('next-options').hidden = false;
+        }
+        document.getElementById('prepare-next').addEventListener('click', () => chooseNextProducts(false));
+        document.getElementById('duplicate-list').addEventListener('click', () => chooseNextProducts(true));
+        document.getElementById('next-cancel').addEventListener('click', () => { document.getElementById('next-options').hidden = true; });
+        document.getElementById('next-confirm').addEventListener('click', () => prepareNextPurchase(nextPurchaseCopy,
+            new Set([...document.querySelectorAll('#next-products input:checked')].map(input => input.value))));
+        // A cópia é gerada localmente; nenhum dado é enviado a outro serviço.
+        document.getElementById('backup-export').addEventListener('click', () => {
+            if (dataLoadFailed) { showToast('Os dados atuais não puderam ser lidos. Esta tela não representa uma cópia confiável.'); return; }
+            const payload = { version: 1, createdAt: new Date().toISOString(), data: appData,
+                preferences: { theme: document.documentElement.getAttribute('data-theme'), comfort: document.documentElement.dataset.comfort === 'true',
+                    hidePrice: document.documentElement.dataset.hidePrice === 'true', hideCategory: document.documentElement.dataset.hideCategory === 'true', hideSuggestions: document.documentElement.dataset.hideSuggestions === 'true' } };
+            const url = URL.createObjectURL(new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'lista-compras-backup.json';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            showToast('Arquivo preparado. Confira o salvamento nos downloads.');
+        });
+        document.getElementById('backup-import').addEventListener('change', async event => {
+            const file = event.target.files[0];
+            if (!file) return;
+            try {
+                const payload = JSON.parse(await file.text());
+                if (payload.version != null && payload.version !== 1) throw new Error('version');
+                const candidate = payload.data || payload;
+                if (!isValidAppData(candidate)) throw new Error('invalid');
+                const backupDate = payload.createdAt && Number.isFinite(Date.parse(payload.createdAt)) ? new Date(payload.createdAt).toLocaleString('pt-BR') : 'não informada';
+                if (!confirm(`Restaurar ${candidate.lists.length} listas e ${candidate.items.length} produtos? Data da cópia: ${backupDate}. As listas atuais serão substituídas.${dataLoadFailed ? ' Os dados atuais estão ilegíveis.' : ' Guarde uma cópia antes de continuar.'}`)) return;
+                const previousLoadFailed = dataLoadFailed;
+                appData = candidate;
+                initPurchaseHistory();
+                dataLoadFailed = false;
+                const saved = saveData();
+                if (!saved) dataLoadFailed = previousLoadFailed;
+                if (saved && payload.preferences) {
+                    const { theme, comfort } = payload.preferences;
+                    try {
+                        if (['light', 'dark'].includes(theme)) {
+                            localStorage.setItem(THEME_KEY, theme);
+                            initTheme();
+                        }
+                        if (typeof comfort === 'boolean') {
+                            localStorage.setItem('lista_compras_comfort', String(comfort));
+                            document.documentElement.dataset.comfort = String(comfort);
+                            document.getElementById('comfort-mode').checked = comfort;
+                        }
+                        for (const [field, id] of [['hidePrice', 'hide-price'], ['hideCategory', 'hide-category'], ['hideSuggestions', 'hide-suggestions']]) {
+                            if (typeof payload.preferences[field] !== 'boolean') continue;
+                            const value = payload.preferences[field];
+                            localStorage.setItem(`lista_compras_${id}`, String(value));
+                            document.documentElement.dataset[field] = String(value);
+                            document.getElementById(id).checked = value;
+                        }
+                    } catch (_) { showToast('Listas restauradas. Não foi possível guardar a aparência.'); }
+                }
+                activeCategoryFilter = 'Todos';
+                document.getElementById('list-search').value = '';
+                renderListsManager();
+                renderFilterChips();
+                renderList();
+                renderQuickChips();
+                showToast(saved ? 'Listas restauradas' : SAVE_ERROR_MESSAGE);
+            } catch (_) {
+                showToast('Arquivo inválido. Suas listas foram mantidas.');
+            } finally {
+                event.target.value = '';
+            }
+        });
         document.getElementById('btn-select-list').addEventListener('click', () => {
             renderListsManager();
             listsModal.classList.add('active');
@@ -3024,6 +3366,23 @@
                 pendingCount.style.color = 'var(--text-secondary)';
                 pendingCount.textContent = `${count} itens pendentes`;
                 details.append(name, pendingCount);
+                const rename = document.createElement('button');
+                rename.type = 'button';
+                rename.className = 'chip';
+                rename.textContent = 'Renomear';
+                rename.setAttribute('aria-label', `Renomear lista ${list.name}`);
+                rename.addEventListener('pointerdown', event => event.stopPropagation());
+                rename.addEventListener('click', event => {
+                    event.stopPropagation();
+                    const newName = prompt('Novo nome da lista:', list.name);
+                    if (newName === null) return;
+                    if (!newName.trim()) { showToast('Informe um nome para a lista.'); return; }
+                    list.name = newName.trim();
+                    const saved = saveData();
+                    renderListsManager(); renderList();
+                    showToast(saved ? 'Lista renomeada' : SAVE_ERROR_MESSAGE);
+                });
+                details.appendChild(rename);
                 div.appendChild(details);
                 if (list.id === appData.activeListId) {
                     const active = document.createElement('span');
@@ -3073,7 +3432,8 @@
                     if (!shouldDelete) return;
                     if (appData.lists.length <= 1) return;
                     listPendingDeletion = list.id;
-                    document.getElementById('delete-list-description').textContent = `Excluir a lista "${list.name}" e todos os produtos dela?`;
+                    const affected = appData.items.filter(item => item.listId === list.id).length;
+                    document.getElementById('delete-list-description').textContent = `Excluir a lista "${list.name}" e seus ${affected} produtos? Esta ação não pode ser desfeita.`;
                     deleteListModal.classList.add('active');
                     document.getElementById('cancel-delete-list').focus();
                 });
@@ -3128,10 +3488,11 @@
 
             let pendingTotal = 0;
             pending.forEach(i => {
-                if (i.price && i.quantity) pendingTotal += (i.price * i.quantity);
+                pendingTotal += itemSubtotal(i) || 0;
             });
 
             let text = `🛒 *${activeList.name}*\n\n`;
+            if (pending.length === 0) text += 'Não há produtos pendentes nesta lista.\n';
 
             if (pending.length > 0) {
                 text += `📝 *Para comprar*\n\n`;
@@ -3146,14 +3507,19 @@
 
                     text += `${category.icon} *${category.name}*\n`;
                     categoryItems.forEach(i => {
-                        const priceStr = i.price > 0 ? ` · ${formatMoney(i.price * i.quantity)}` : '';
+                        const subtotal = itemSubtotal(i);
+                        const priceStr = subtotal !== null ? ` · ${formatMoney(subtotal)}` : ' · Preço a confirmar';
                         text += `☐ ${i.name} · ${i.quantity} ${i.unit}${priceStr}\n`;
+                        if (i.note) text += `   Obs.: ${i.note}\n`;
+                        if (i.priceEstimate) text += '   Preço de compra anterior; estimativa.\n';
                     });
                     text += '\n';
                 });
             }
 
-            if (pendingTotal > 0) text += `💰 *Total para comprar:* ${formatMoney(pendingTotal)}\n`;
+            const missingPrices = pending.filter(item => itemSubtotal(item) === null).length;
+            if (pending.length) text += `💰 *${missingPrices ? 'Total parcial' : 'Falta comprar'}:* ${formatMoney(pendingTotal)}\n`;
+            if (missingPrices) text += `${missingPrices} sem preço\n`;
 
             text += `\n📋 _Lista de Compras_`;
 
@@ -3246,6 +3612,49 @@
         }
 
         // Inicialização em ordem: preferências e dados primeiro, depois interface e gestos dependentes do DOM.
+        ['btn-select-list', 'toggle-purchased-btn'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.currentTarget.click(); }
+            });
+        });
+        // O teclado permanece na janela aberta; Escape oferece a mesma saída dos botões de fechar.
+        document.addEventListener('keydown', event => {
+            const modal = [...document.querySelectorAll('.modal-overlay.active')].at(-1);
+            if (!modal) return;
+            if (event.key === 'Escape') {
+                completingPrices = false;
+                modal.classList.remove('active');
+                document.getElementById('btn-select-list').focus();
+            }
+            if (event.key !== 'Tab') return;
+            const controls = [...modal.querySelectorAll('button, input, select, textarea, [tabindex="0"]')].filter(element => !element.disabled && element.getClientRects().length);
+            if (!controls.length) return;
+            const first = controls[0], last = controls.at(-1);
+            if (!modal.contains(document.activeElement) || (!event.shiftKey && document.activeElement === last)) {
+                event.preventDefault(); first.focus();
+            } else if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault(); last.focus();
+            }
+        });
+        document.getElementById('list-search').addEventListener('input', renderList);
+        const comfortToggle = document.getElementById('comfort-mode');
+        [['hide-price', 'hidePrice'], ['hide-category', 'hideCategory'], ['hide-suggestions', 'hideSuggestions']].forEach(([id, field]) => {
+            const control = document.getElementById(id);
+            try { control.checked = localStorage.getItem(`lista_compras_${id}`) === 'true'; } catch (_) {}
+            document.documentElement.dataset[field] = String(control.checked);
+            control.addEventListener('change', () => {
+                document.documentElement.dataset[field] = String(control.checked);
+                try { localStorage.setItem(`lista_compras_${id}`, String(control.checked)); }
+                catch (_) { showToast('A aparência mudou, mas a preferência não pôde ser salva.'); }
+            });
+        });
+        try { comfortToggle.checked = localStorage.getItem('lista_compras_comfort') === 'true'; } catch (_) {}
+        document.documentElement.dataset.comfort = String(comfortToggle.checked);
+        comfortToggle.addEventListener('change', () => {
+            document.documentElement.dataset.comfort = String(comfortToggle.checked);
+            try { localStorage.setItem('lista_compras_comfort', String(comfortToggle.checked)); }
+            catch (_) { showToast('A aparência mudou, mas não foi possível guardar a preferência.'); }
+        });
         initTheme();
         loadData();
         renderFilterChips();
