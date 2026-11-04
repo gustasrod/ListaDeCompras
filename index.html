@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Compras - Protótipo Android</title>
     <style>
+        /* Regras globais: deixam os elementos previsíveis e removem margens padrão do navegador. */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -12,12 +13,16 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* Paleta clara compartilhada por todos os componentes; os nomes identificam a função de cada cor. */
         :root {
+            /* Fundo externo e contorno do aparelho simulado. */
             --bg-page: #0f172a;
             --phone-border: #334155;
+            /* Verde usado em ações, estados positivos e realces. */
             --primary: #10b981;
             --primary-dark: #059669;
             --primary-light: #ecfdf5;
+            /* Superfícies e níveis de texto. */
             --surface: #ffffff;
             --surface-variant: #f8fafc;
             --surface-hover: #f1f5f9;
@@ -27,23 +32,52 @@
             --border: #e2e8f0;
             --danger: #ef4444;
             --danger-light: #fef2f2;
+            /* Tipografia e sombras reutilizadas para manter a aparência uniforme. */
             --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
         }
 
+        /* No tema escuro, só são trocados os tokens necessários; componentes herdam o restante da paleta. */
         [data-theme="dark"] {
-            --surface: #1e293b;
-            --surface-variant: #0f172a;
-            --surface-hover: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border: #334155;
-            --primary-light: rgba(16, 185, 129, 0.15);
-            --danger-light: rgba(239, 68, 68, 0.15);
+            color-scheme: dark;
+            --surface: #182635;
+            --surface-variant: #111d29;
+            --surface-hover: #263849;
+            --text-primary: #f1f7f6;
+            --text-secondary: #b2c4ca;
+            --text-muted: #91a8ae;
+            --border: #344957;
+            --primary-light: rgba(52, 211, 153, 0.14);
+            --danger-light: rgba(239, 68, 68, 0.18);
         }
+
+        /* Ajustes finos de contraste e estados que não podem ser resolvidos apenas pelos tokens globais. */
+        [data-theme="dark"] .app-content { background: #101a25; }
+        [data-theme="dark"] .item-card:hover { border-color: #58717c; }
+        [data-theme="dark"] .item-card.purchased {
+            opacity: 1;
+            background-color: #192f2d;
+            border-color: #31534b;
+        }
+        [data-theme="dark"] .item-card.purchased .item-name { color: #abc4ba; }
+        [data-theme="dark"] .item-card-shell.purchased { background-color: #294b41; }
+        [data-theme="dark"] .item-card-shell:not(.purchased),
+        [data-theme="dark"] .list-swipe-shell { background-color: transparent; }
+        [data-theme="dark"] .item-card-shell .item-delete-trail,
+        [data-theme="dark"] .list-swipe-shell .item-delete-trail { background-color: var(--danger); }
+        [data-theme="dark"] .filter-chip:hover,
+        [data-theme="dark"] .chip:hover,
+        [data-theme="dark"] .chip.chip-in-list,
+        [data-theme="dark"] .preset-chip:hover { color: #89e9c6; }
+        [data-theme="dark"] .filter-chip.active,
+        [data-theme="dark"] .filter-chip.active:hover,
+        [data-theme="dark"] .btn-add,
+        [data-theme="dark"] .btn-primary { background-color: #08765d; color: #fff; }
+        [data-theme="dark"] .btn-add:hover,
+        [data-theme="dark"] .btn-primary:hover { background-color: #09624f; }
+        [data-theme="dark"] .btn-danger { color: #ff999e; }
+        [data-theme="dark"] .quick-add-container { box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2); }
 
         * {
             scrollbar-width: none;
@@ -56,6 +90,7 @@
             height: 0;
         }
 
+        /* Centraliza o protótipo em uma página de demonstração e define o fundo fora do aparelho. */
         body {
             background-color: var(--bg-page);
             background-image: radial-gradient(ellipse at 50% 0%, #1e293b 0%, #0b111a 80%);
@@ -70,6 +105,7 @@
             padding: 20px 10px;
         }
 
+        /* Moldura do celular: também é o contêiner de posição para folhas, alertas e lixeira. */
         .phone-frame {
             width: 100%;
             max-width: 420px;
@@ -84,25 +120,16 @@
             position: relative;
         }
 
-        .status-bar {
-            height: 44px;
-            padding: 12px 22px 0;
+        .ad-area {
+            min-height: 64px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-            background-color: var(--surface-variant);
-            user-select: none;
+            justify-content: center;
+            background: var(--surface-variant);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 12px;
             flex-shrink: 0;
-            z-index: 10;
-        }
-
-        .status-bar-icons {
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .app-header {
@@ -170,6 +197,7 @@
             color: var(--text-primary);
         }
 
+        /* Resumo de pendências e valor estimado, seguido dos filtros horizontais por categoria. */
         .totals-bar {
             padding: 8px 18px;
             background-color: var(--surface-variant);
@@ -279,6 +307,7 @@
             color: #ffffff;
         }
 
+        /* Área rolável que recebe os grupos de itens pendentes, comprados e estado vazio. */
         .app-content {
             flex: 1;
             overflow-y: auto;
@@ -326,6 +355,7 @@
             gap: 5px;
         }
 
+        /* Cartões, área de gesto de exclusão e estados visuais de compra/seleção. */
         .item-card {
             display: flex;
             align-items: center;
@@ -529,6 +559,7 @@
             max-width: 250px;
         }
 
+        /* Faixa fixa inferior: recomendações, campo de cadastro e aviso temporário. */
         .quick-add-container {
             position: absolute;
             bottom: 0;
@@ -602,6 +633,117 @@
             border-color: var(--primary);
         }
 
+        /* Recomendações recorrentes aceitam arraste vertical para abrir a lixeira central. */
+        .chip-recurring {
+            cursor: grab;
+            touch-action: pan-x;
+        }
+
+        .chip-recurring.is-dragging {
+            opacity: 0.45;
+            cursor: grabbing;
+            transform: scale(0.96);
+        }
+
+        /* Fundo desfocado e alvo de exclusão exibidos somente durante o arraste de recorrências. */
+        .recommendation-trash-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 80;
+            display: grid;
+            place-items: center;
+            background: rgba(15, 23, 42, 0.2);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.18s ease, visibility 0.18s ease;
+        }
+
+        .recommendation-trash-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .recommendation-trash-target {
+            position: relative;
+            z-index: 1;
+            width: 136px;
+            height: 136px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.62);
+            color: var(--danger);
+            box-shadow: 0 16px 42px rgba(15, 23, 42, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transform: scale(0.92);
+            transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+        }
+
+        .recommendation-trash-target svg {
+            width: 38px;
+            height: 38px;
+        }
+
+        .recommendation-trash-target span {
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .recommendation-trash-target.is-ready {
+            transform: scale(1.08);
+            background: rgba(239, 68, 68, 0.88);
+            color: #fff;
+        }
+
+        .recommendation-drag-ghost {
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            padding: 9px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.96);
+            color: var(--text-primary);
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.32);
+            font-size: 14px;
+            font-weight: 650;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-15%, -115%) scale(0.78);
+            transition: left 0.04s linear, top 0.04s linear, opacity 0.12s ease, transform 0.16s ease-out;
+        }
+
+        .recommendation-drag-ghost.is-visible {
+            opacity: 1;
+            transform: translate(-15%, -115%) scale(1.06);
+        }
+
+        .recommendation-drag-ghost.is-over-trash {
+            transform: translate(-15%, -115%) scale(0.96);
+        }
+
+        .recommendation-drag-finger {
+            position: absolute;
+            right: -13px;
+            bottom: -22px;
+            font-size: 27px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 2px rgba(15, 23, 42, 0.28));
+            transform: rotate(-12deg);
+        }
+
+        /* Campo de cadastro rápido e botão de inclusão. */
         .input-row {
             display: flex;
             align-items: center;
@@ -657,6 +799,7 @@
             background-color: var(--primary-dark);
         }
 
+        /* Camada comum de modais; folhas inferiores servem para editar itens e gerenciar listas. */
         .modal-overlay {
             position: absolute;
             inset: 0;
@@ -758,6 +901,7 @@
             gap: 12px;
         }
 
+        /* Controles de quantidade e atalhos de peso usados no formulário de edição. */
         .stepper-container {
             display: flex;
             align-items: center;
@@ -785,7 +929,7 @@
             background-color: var(--surface-hover);
         }
 
-        .stepper-value, .stepper-input {
+        .stepper-input {
             flex: 1;
             text-align: center;
             font-weight: 600;
@@ -830,6 +974,7 @@
             color: var(--primary-dark);
         }
 
+        /* Botões reaproveitados por folhas, confirmações e mensagens. */
         .sheet-actions {
             display: flex;
             gap: 10px;
@@ -875,6 +1020,7 @@
             font-weight: 600;
         }
 
+        /* Mensagem temporária sobre a barra inferior, com ação de desfazer quando aplicável. */
         .toast-snack {
             position: absolute;
             bottom: calc(100% + 8px);
@@ -934,7 +1080,11 @@
             margin-bottom: 16px;
         }
 
+        /* Cartões de listas, confirmação centralizada e prévia do texto compartilhável. */
         .list-selector-item {
+            position: relative;
+            background-color: var(--surface);
+            touch-action: pan-y;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -950,6 +1100,16 @@
             background-color: var(--primary-light);
             font-weight: 600;
         }
+
+        .list-swipe-shell {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            background: var(--danger);
+            margin-bottom: 8px;
+        }
+
+        .list-swipe-shell .list-selector-item { margin-bottom: 0; }
 
         .share-preview {
             background-color: var(--surface-variant);
@@ -974,6 +1134,7 @@
             height: 0;
         }
 
+        /* Em telas estreitas, a moldura ocupa o celular inteiro e deixa de parecer um aparelho dentro da página. */
         @media (max-width: 480px) {
             body {
                 padding: 0;
@@ -993,24 +1154,11 @@
     </style>
 </head>
 <body>
+    <!-- Aplicativo simulado: todas as partes visíveis e os modais ficam dentro da moldura. -->
     <div class="phone-frame" id="app">
-        <div class="status-bar">
-            <span id="status-clock">12:00</span>
-            <div class="status-bar-icons">
-                <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor">
-                    <rect x="0" y="8" width="3" height="4" rx="0.5"/>
-                    <rect x="4" y="6" width="3" height="6" rx="0.5"/>
-                    <rect x="8" y="3" width="3" height="9" rx="0.5"/>
-                    <rect x="12" y="0" width="3" height="12" rx="0.5"/>
-                </svg>
-                <svg width="16" height="11" viewBox="0 0 18 12" fill="currentColor">
-                    <rect x="0" y="1" width="15" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                    <rect x="2" y="3" width="10" height="6" rx="1"/>
-                    <path d="M16 4.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-            </div>
-        </div>
+        <aside class="ad-area" aria-label="Espaço para anúncio">Espaço para anúncio</aside>
 
+        <!-- Cabeçalho com lista ativa e ações de tema, compartilhamento e limpeza de comprados. -->
         <header class="app-header">
             <div class="header-left" id="btn-select-list" title="Trocar de Lista">
                 <div class="app-title-group">
@@ -1056,6 +1204,7 @@
             </div>
         </header>
 
+        <!-- Resumo calculado pelo JavaScript e filtros de categoria recriados conforme os itens. -->
         <div class="totals-bar">
             <span class="totals-count" id="totals-count-text">0 itens pendentes</span>
             <span class="totals-price" id="totals-price-val">Total: R$ 0,00</span>
@@ -1063,6 +1212,7 @@
 
         <div class="filter-chips-bar" id="category-filter-chips"></div>
 
+        <!-- Conteúdo rolável: grupos dinâmicos de itens e mensagem mostrada quando a lista/filtro está vazio. -->
         <main class="app-content" id="list-container">
             <div id="pending-items-group"></div>
 
@@ -1087,13 +1237,14 @@
             </div>
         </main>
 
+        <!-- Cadastro rápido: recomendações aparecem acima do campo; o aviso pode oferecer desfazer. -->
         <div class="quick-add-container">
             <div class="suggestion-chips" id="quick-chips"></div>
 
             <div class="input-row">
                 <input 
                     type="text" 
-                    id="quick-input" 
+                    id="quick-input" aria-label="Adicionar produto" 
                     class="quick-input" 
                     placeholder="Adicionar item (ex: 2 Leite, 1kg Banana, Café 16,90)..." 
                     autocomplete="off"
@@ -1112,12 +1263,13 @@
             </div>
         </div>
 
+        <!-- Formulário de edição; os IDs dos campos são lidos e atualizados pelas funções de edição. -->
         <div class="modal-overlay" id="edit-modal">
             <div class="bottom-sheet">
                 <div class="sheet-handle"></div>
                 <div class="sheet-header">
                     <h2 class="sheet-title">Editar Produto</h2>
-                    <button class="btn-icon" id="btn-close-edit">
+                    <button class="btn-icon" id="btn-close-edit" aria-label="Fechar edição">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1128,13 +1280,13 @@
                 <input type="hidden" id="edit-id">
 
                 <div class="form-group">
-                    <label class="form-label">Nome do produto</label>
+                    <label class="form-label" for="edit-name">Nome do produto</label>
                     <input type="text" id="edit-name" class="form-input" placeholder="Ex: Leite Integral">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group" style="flex: 1.2;">
-                        <label class="form-label">Quantidade</label>
+                        <label class="form-label" for="stepper-val">Quantidade</label>
                         <div class="stepper-container">
                             <button type="button" class="stepper-btn" id="stepper-minus">-</button>
                             <input type="number" step="any" min="0.01" class="stepper-input" id="stepper-val" value="1">
@@ -1143,7 +1295,7 @@
                     </div>
 
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">Unidade</label>
+                        <label class="form-label" for="edit-unit">Unidade</label>
                         <select id="edit-unit" class="form-select">
                             <option value="un">un</option>
                             <option value="kg">kg</option>
@@ -1160,12 +1312,12 @@
 
                 <div class="form-row">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">Preço Unitário (R$)</label>
+                        <label class="form-label" for="edit-price">Preço Unitário (R$)</label>
                         <input type="number" step="0.01" min="0" id="edit-price" class="form-input" placeholder="0,00">
                     </div>
 
                     <div class="form-group" style="flex: 1.2;">
-                        <label class="form-label">Categoria</label>
+                        <label class="form-label" for="edit-category">Categoria</label>
                         <select id="edit-category" class="form-select">
                             <option value="Mercearia">Mercearia</option>
                             <option value="Hortifrúti">Hortifrúti</option>
@@ -1183,7 +1335,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Observação (marca, tipo, etc.)</label>
+                    <label class="form-label" for="edit-note">Observação (marca, tipo, etc.)</label>
                     <input type="text" id="edit-note" class="form-input" placeholder="Opcional. Ex: Sem lactose">
                 </div>
 
@@ -1194,12 +1346,13 @@
             </div>
         </div>
 
+        <!-- Gerenciador de listas; cada cartão é criado em lists-container e aceita seleção ou arraste. -->
         <div class="modal-overlay" id="lists-modal">
             <div class="bottom-sheet">
                 <div class="sheet-handle"></div>
                 <div class="sheet-header">
                     <h2 class="sheet-title">Minhas Listas</h2>
-                    <button class="btn-icon" id="btn-close-lists">
+                    <button class="btn-icon" id="btn-close-lists" aria-label="Fechar listas">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1210,7 +1363,7 @@
                 <div id="lists-container" style="margin-bottom: 16px;"></div>
 
                 <div class="form-group">
-                    <label class="form-label">Criar nova lista</label>
+                    <label class="form-label" for="new-list-name">Criar nova lista</label>
                     <div style="display: flex; gap: 8px;">
                         <input type="text" id="new-list-name" class="form-input" placeholder="Ex: Feira, Farmácia...">
                         <button class="btn-primary" id="btn-create-list" style="flex: none; padding: 0 18px;">Criar</button>
@@ -1219,6 +1372,19 @@
             </div>
         </div>
 
+        <!-- Confirmação própria do protótipo; impede excluir a última lista e avisa sobre seus produtos. -->
+        <div class="modal-overlay" id="delete-list-modal" style="z-index: 60;">
+            <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="delete-list-title" aria-describedby="delete-list-description">
+                <h3 class="dialog-title" id="delete-list-title">Excluir lista?</h3>
+                <p class="dialog-desc" id="delete-list-description"></p>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-secondary" id="cancel-delete-list">Cancelar</button>
+                    <button type="button" class="btn-danger" id="confirm-delete-list">Excluir</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prévia do texto de compartilhamento; inclui apenas pendências separadas por categoria. -->
         <div class="modal-overlay" id="share-modal">
             <div class="dialog-box">
                 <h3 class="dialog-title">Compartilhar Lista</h3>
@@ -1230,13 +1396,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Alvo central do gesto que remove recorrências do histórico sem apagar itens da lista. -->
+        <div class="recommendation-trash-overlay" id="recommendation-trash-overlay" aria-hidden="true">
+            <div class="recommendation-trash-target" id="recommendation-trash-target">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"></path>
+                </svg>
+                <span>Solte para excluir</span>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Chaves estáveis do armazenamento local: uma guarda listas/itens e a outra guarda o tema visual.
         const STORAGE_KEY = 'lista_compras_db_v1';
         const THEME_KEY = 'lista_compras_theme';
+        // Mensagem única usada quando uma alteração não consegue ser gravada no navegador.
         const SAVE_ERROR_MESSAGE = 'Não foi possível salvar as alterações no navegador.';
 
+        // Categorias disponíveis, com nomes usados nos dados e ícones mostrados nos filtros e recomendações.
         const CATEGORIES_LIST = [
             { id: 'Todos', name: 'Todos', icon: '✨' },
             { id: 'Mercearia', name: 'Mercearia', icon: '🛒' },
@@ -1252,9 +1431,12 @@
             { id: 'Outros', name: 'Outros', icon: '📦' }
         ];
 
+        // Estado de tela e proteção de salvamento; filtro começa em Todos e falha de leitura bloqueia gravações.
         let activeCategoryFilter = 'Todos';
         let dataLoadFailed = false;
 
+        // Modelo inicial de demonstração. Listas, itens e histórico são substituídos pelos dados válidos salvos.
+        // Cada item usa id/listId/name/quantity/unit/price/category/note/purchased; o histórico guarda compras para recomendações.
         let appData = {
             activeListId: 'list_1',
             lists: [
@@ -1271,14 +1453,21 @@
                 { id: '6', listId: 'list_1', name: 'Detergente Líquido', quantity: 2, unit: 'un', price: 2.75, category: 'Limpeza', note: '', purchased: true },
                 { id: '7', listId: 'list_1', name: 'Papel Higiênico', quantity: 1, unit: 'pct', price: 24.50, category: 'Higiene', note: '12 rolos', purchased: true }
             ],
-            purchaseHistory: []
+            purchaseHistory: [],
+            registrationHistory: []
         };
 
+        // Último estado confirmado: permite desfazer alterações em memória se o navegador recusar a gravação.
+        // A cópia contém apenas JSON criado pelo aplicativo; nunca substitui dados inválidos no armazenamento.
+        let lastSavedData = JSON.stringify(appData);
+
+        // Dados temporários da ação Desfazer e da apresentação da seção de itens comprados.
         let lastToggledItemId = null;
         let lastToggledPurchaseHistoryId = null;
         let undoTimeout = null;
         let purchasedCollapsed = false;
 
+        /** Remove acentos e espaços externos e converte para minúsculas sem alterar o texto salvo. */
         function normalizeText(str) {
             return (str || '')
                 .normalize('NFD')
@@ -1287,8 +1476,30 @@
                 .trim();
         }
 
+        /**
+         * Prepara nomes para comparação de duplicatas, plural e recomendações.
+         * `str` é o nome recebido; o retorno serve para comparar, não para substituir o nome exibido.
+         */
+        function normalizeProductNameForMatching(str) {
+            return normalizeText(str).replace(/\b[a-z]+\b/g, word => {
+                if (word === 'maes') return 'mae';
+                if (word.endsWith('oes') || word.endsWith('aes')) return `${word.slice(0, -3)}ao`;
+                if (word.endsWith('aos')) return word.slice(0, -1);
+                if (word.endsWith('ns')) return `${word.slice(0, -2)}m`;
+                if (word.endsWith('ais') && !['mais', 'pais'].includes(word)) return `${word.slice(0, -3)}al`;
+                if (word.endsWith('eis')) return `${word.slice(0, -3)}el`;
+                if (word === 'atlas' || word === 'oculos') return word;
+                if (/[aeo]s$/.test(word) && word.length > 3) return word.slice(0, -1);
+                return word;
+            });
+        }
+
+        /**
+         * Escolhe o emoji do produto usando primeiro regras específicas de nome e depois a categoria.
+         * `norm` é o nome normalizado; `cat` contém a categoria usada como alternativa final.
+         */
         function getProductIcon(name, category) {
-            const norm = normalizeText(name);
+            const norm = normalizeProductNameForMatching(name);
 
             if (/doce de leite/.test(norm)) return '🍯';
             if (/leite condensado/.test(norm)) return '🥫';
@@ -1310,31 +1521,31 @@
             if (/bolo|torta|cupcake/.test(norm)) return '🎂';
             if (/pastel|empada|coxinha|esfiha|salgadinho/.test(norm)) return '🥟';
 
-            if (/\b(banana|bananas)\b/.test(norm)) return '🍌';
-            if (/\b(maca|macas)\b/.test(norm)) return '🍎';
-            if (/\b(pera|peras)\b/.test(norm)) return '🍐';
-            if (/\b(laranja|laranjas|tangerina|mexerica)\b/.test(norm)) return '🍊';
-            if (/\b(limao|limoes)\b/.test(norm)) return '🍋';
-            if (/\b(uva|uvas)\b/.test(norm)) return '🍇';
-            if (/\b(morango|morangos)\b/.test(norm)) return '🍓';
+            if (/\bbanana\b/.test(norm)) return '🍌';
+            if (/\bmaca\b/.test(norm)) return '🍎';
+            if (/\bpera\b/.test(norm)) return '🍐';
+            if (/\b(laranja|tangerina|mexerica)\b/.test(norm)) return '🍊';
+            if (/\blimao\b/.test(norm)) return '🍋';
+            if (/\buva\b/.test(norm)) return '🍇';
+            if (/\bmorango\b/.test(norm)) return '🍓';
             if (/\b(mirtilo|blueberry)\b/.test(norm)) return '🫐';
-            if (/\b(melao|meloes)\b/.test(norm)) return '🍈';
-            if (/\b(melancia|melancias)\b/.test(norm)) return '🍉';
-            if (/\b(abacaxi|abacaxis)\b/.test(norm)) return '🍍';
-            if (/\b(manga|mangas)\b/.test(norm)) return '🥭';
-            if (/\b(pessego|pessegos)\b/.test(norm)) return '🍑';
-            if (/\b(cereja|cerejas)\b/.test(norm)) return '🍒';
-            if (/\b(kiwi|kiwis)\b/.test(norm)) return '🥝';
-            if (/\b(abacate|abacates)\b/.test(norm)) return '🥑';
-            if (/\b(coco|cocos)\b/.test(norm)) return '🥥';
+            if (/\bmelao\b/.test(norm)) return '🍈';
+            if (/\bmelancia\b/.test(norm)) return '🍉';
+            if (/\babacaxi\b/.test(norm)) return '🍍';
+            if (/\bmanga\b/.test(norm)) return '🥭';
+            if (/\bpessego\b/.test(norm)) return '🍑';
+            if (/\bcereja\b/.test(norm)) return '🍒';
+            if (/\bkiwi\b/.test(norm)) return '🥝';
+            if (/\babacate\b/.test(norm)) return '🥑';
+            if (/\bcoco\b/.test(norm)) return '🥥';
             if (/maracuja|goiaba|caju|mamao|acerola|amora|framboesa|jabuticaba|caqui/.test(norm)) return '🍈';
 
-            if (/\b(tomate|tomates)\b/.test(norm)) return '🍅';
-            if (/\b(batata|batatas)\b/.test(norm)) return '🥔';
-            if (/\b(cebola|cebolas)\b/.test(norm)) return '🧅';
-            if (/\b(alho|alhos)\b/.test(norm)) return '🧄';
-            if (/\b(cenoura|cenouras)\b/.test(norm)) return '🥕';
-            if (/\b(milho|milhos)\b/.test(norm)) return '🌽';
+            if (/\btomate\b/.test(norm)) return '🍅';
+            if (/\bbatata\b/.test(norm)) return '🥔';
+            if (/\bcebola\b/.test(norm)) return '🧅';
+            if (/\balho\b/.test(norm)) return '🧄';
+            if (/\bcenoura\b/.test(norm)) return '🥕';
+            if (/\bmilho\b/.test(norm)) return '🌽';
             if (/pimentao|pimenta/.test(norm)) return '🫑';
             if (/pepino/.test(norm)) return '🥒';
             if (/alface|couve|espinafre|rucula|acelga|repolho|agriao|verdura|salada/.test(norm)) return '🥬';
@@ -1357,20 +1568,17 @@
             if (/queijo|mussarela|mucarela|parmesao|provolone|cheddar|gorgonzola|brie|ricota|minas/.test(norm)) return '🧀';
             if (/manteiga|margarina|requeijao|nata|cream cheese/.test(norm)) return '🧈';
             if (/iogurte|danone|yakult|coalhada/.test(norm)) return '🍦';
-            if (/\bovos?\b/.test(norm)) return '🥚';
+            if (/\bovo\b/.test(norm)) return '🥚';
 
             if (/baguete|bagueti/.test(norm)) return '🥖';
             if (/croissant/.test(norm)) return '🥐';
-            if (/\b(pao|paes|bisnaga|torrada)\b/.test(norm)) return '🍞';
-            if (/bolo|torta|cupcake/.test(norm)) return '🎂';
+            if (/\b(pao|bisnaga|torrada)\b/.test(norm)) return '🍞';
             if (/biscoito|bolacha|cookie|wafer|waffer/.test(norm)) return '🍪';
             if (/rosquinha|donut|sonho/.test(norm)) return '🍩';
-            if (/pastel|empada|coxinha|esfiha|salgadinho/.test(norm)) return '🥟';
             if (/panqueca|crepe|waffle/.test(norm)) return '🥞';
 
             if (/sorvete|picole|acai/.test(norm)) return '🍨';
-            if (/hamburguer|nugget|nuggets|empanado/.test(norm)) return '🍔';
-            if (/\bpizza\b/.test(norm)) return '🍕';
+            if (/hamburguer|nugget|empanado/.test(norm)) return '🍔';
             if (/\bgelo\b/.test(norm)) return '🧊';
             if (/lasanha/.test(norm)) return '🍝';
 
@@ -1438,6 +1646,7 @@
             return cat ? cat.icon : '🛍️';
         }
 
+        /** Limpa rótulos de recomendações removendo promoção, preço e tipo numérico deixados no nome. */
         function cleanProductName(rawName) {
             let name = (rawName || '').trim();
             name = name.replace(/\s*[-–—,]?\s*\b(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\b/gi, '');
@@ -1448,10 +1657,13 @@
             return name.charAt(0).toUpperCase() + name.slice(1);
         }
 
+        /** Garante que dados antigos ou incompletos tenham uma lista de histórico utilizável. */
         function initPurchaseHistory() {
             if (!Array.isArray(appData.purchaseHistory)) appData.purchaseHistory = [];
+            if (!Array.isArray(appData.registrationHistory)) appData.registrationHistory = [];
         }
 
+        /** Registra uma compra no histórico oculto que alimenta as recomendações recorrentes. */
         function recordProductPurchase(item) {
             const entry = {
                 id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -1464,11 +1676,17 @@
             return entry.id;
         }
 
+        /** Remove do histórico apenas o registro com o identificador informado. */
         function removePurchaseHistoryEntry(entryId) {
             if (!entryId) return;
             appData.purchaseHistory = appData.purchaseHistory.filter(entry => entry.id !== entryId);
         }
 
+        /**
+         * Lê e valida a estrutura salva antes de usá-la.
+         * `saved`, `parsed` e `validData` separam leitura, conversão JSON e validação; `changed` marca correções aplicadas.
+         * Se os dados forem inválidos, mantém o conteúdo salvo intacto e impede que uma gravação posterior o sobrescreva.
+         */
         function loadData() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
@@ -1480,15 +1698,23 @@
                         parsed.lists.every(list => list && list.id != null && typeof list.name === 'string') &&
                         parsed.lists.some(list => list.id === parsed.activeListId) &&
                         Array.isArray(parsed.items) &&
-                        parsed.items.every(item => item && item.id != null && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId)) &&
-                        (!Array.isArray(parsed.purchaseHistory) || parsed.purchaseHistory.every(entry =>
+                        parsed.items.every(item => item && item.id != null && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId) &&
+                            (item.quantity == null || (Number.isFinite(item.quantity) && item.quantity > 0)) &&
+                            (item.price == null || (Number.isFinite(item.price) && item.price >= 0)) &&
+                            ['unit', 'category', 'note'].every(field => item[field] == null || typeof item[field] === 'string') &&
+                            (item.purchased == null || typeof item.purchased === 'boolean')) &&
+                        (parsed.purchaseHistory == null || (Array.isArray(parsed.purchaseHistory) && parsed.purchaseHistory.every(entry =>
                             entry && entry.id != null && entry.itemId != null && typeof entry.name === 'string' &&
                             (entry.category == null || typeof entry.category === 'string') && Number.isFinite(entry.purchasedAt)
-                        ));
+                        ))) &&
+                        (parsed.registrationHistory == null || (Array.isArray(parsed.registrationHistory) && parsed.registrationHistory.every(entry =>
+                            entry && typeof entry.name === 'string' && typeof entry.category === 'string' && Number.isFinite(entry.purchasedAt)
+                        )));
 
                     if (validData) {
                         appData = parsed;
                         initPurchaseHistory();
+                        lastSavedData = JSON.stringify(appData);
                         let changed = false;
                         appData.items.forEach(item => {
                             if (/rtx|placa|teclado|mouse|fone|cabo|carregador/i.test(item.name) && item.category === 'Mercearia') {
@@ -1511,17 +1737,29 @@
 
         }
 
+        /**
+         * Confirma o estado completo no armazenamento e guarda sua cópia para a próxima alteração.
+         * Na falha, restaura appData antes de retornar false; os chamadores redesenham a tela com os dados confirmados.
+         * Não grava quando a leitura anterior falhou, preservando o conteúdo original para recuperação.
+         */
         function saveData() {
-            if (dataLoadFailed) return false;
+            if (dataLoadFailed) {
+                appData = JSON.parse(lastSavedData);
+                return false;
+            }
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+                const serialized = JSON.stringify(appData);
+                localStorage.setItem(STORAGE_KEY, serialized);
+                lastSavedData = serialized;
                 return true;
             } catch (e) {
+                appData = JSON.parse(lastSavedData);
                 console.error('Erro ao salvar dados no navegador:', e);
                 return false;
             }
         }
 
+        /** Lê a preferência de tema, aplica o padrão claro se faltar e sincroniza o ícone do cabeçalho. */
         function initTheme() {
             let savedTheme = 'light';
             try {
@@ -1534,6 +1772,7 @@
             updateThemeIcon(savedTheme);
         }
 
+        /** Troca apenas o desenho interno do botão para representar o tema que está ativo. */
         function updateThemeIcon(theme) {
             const icon = document.getElementById('theme-icon');
             if (theme === 'dark') {
@@ -1543,6 +1782,7 @@
             }
         }
 
+        /** Alterna tema na página, tenta persistir a preferência e atualiza o ícone. */
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
             const next = current === 'dark' ? 'light' : 'dark';
@@ -1556,23 +1796,33 @@
             updateThemeIcon(next);
         }
 
+        /** Retorna a lista marcada como ativa; usa a primeira como alternativa se o estado estiver incompleto. */
         function getActiveList() {
             return appData.lists.find(l => l.id === appData.activeListId) || appData.lists[0];
         }
 
+        /** Filtra os itens da lista ativa; filtros de categoria são aplicados separadamente na renderização. */
         function getListItems() {
             return appData.items.filter(item => item.listId === appData.activeListId);
         }
 
+        /** Formata valores numéricos como moeda brasileira em reais. */
         function formatMoney(amount) {
             return Number(amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
+        /**
+         * Recria os filtros a partir das categorias que têm produtos na lista ativa.
+         * `container` recebe os botões, `items` e `pendingItems` sustentam as contagens,
+         * e `cat`, `count` e `chip` representam a categoria atual durante a montagem.
+         * Se a categoria escolhida deixou de existir, volta ao filtro Todos.
+         */
         function renderFilterChips() {
             const container = document.getElementById('category-filter-chips');
             if (!container) return;
             container.innerHTML = '';
 
+            // A lista ativa define quais categorias aparecem; a contagem considera apenas itens pendentes.
             const items = getListItems();
             if (activeCategoryFilter !== 'Todos' && !items.some(i => i.category === activeCategoryFilter)) {
                 activeCategoryFilter = 'Todos';
@@ -1599,26 +1849,47 @@
             });
         }
 
+        /**
+         * Monta recomendações recorrentes primeiro e sugestões padrão depois, sem duplicar nomes.
+         * `pendingMap` permite somar quantidade com um toque; `products` agrupa o histórico por nome;
+         * `recurringSuggestions` ordena por frequência/recência e `displaySuggestions` é o resultado visível.
+         * Cada chip adiciona/soma um item; apenas chips recorrentes podem ser arrastados à lixeira,
+         * o que remove o histórico e preserva o item da lista.
+         */
         function renderQuickChips() {
             const container = document.getElementById('quick-chips');
             if (!container) return;
             container.innerHTML = '';
+            const trashOverlay = document.getElementById('recommendation-trash-overlay');
+            const trashTarget = document.getElementById('recommendation-trash-target');
 
+            const defaultSuggestions = [
+                { name: 'Arroz Integral', category: 'Mercearia' },
+                { name: 'Feijão Carioca', category: 'Mercearia' },
+                { name: 'Leite Desnatado', category: 'Laticínios' },
+                { name: 'Banana Prata', category: 'Hortifrúti' },
+                { name: 'Café Torrado', category: 'Mercearia' }
+            ];
+
+            // Mapa dos itens ainda não comprados para que tocar uma recomendação existente some 1 unidade.
             const currentItems = getListItems();
             const pendingMap = new Map();
             currentItems.forEach(i => {
                 if (!i.purchased && i.name) {
-                    pendingMap.set(cleanProductName(i.name).toLowerCase(), i);
+                    pendingMap.set(normalizeProductNameForMatching(i.name), i);
                 }
             });
 
+            // O histórico é oculto: sua frequência e data da última compra determinam a ordem das recorrências.
             const products = new Map();
-            appData.purchaseHistory.forEach(entry => {
+            const registeredNames = new Set(appData.registrationHistory.map(entry => normalizeProductNameForMatching(cleanProductName(entry.name))));
+            [...appData.registrationHistory, ...appData.purchaseHistory.filter(entry => !registeredNames.has(normalizeProductNameForMatching(cleanProductName(entry.name))))].forEach(entry => {
                 const clean = cleanProductName(entry.name);
-                const key = clean.toLowerCase();
+                const key = normalizeProductNameForMatching(clean);
                 const product = products.get(key) || {
                     name: clean,
                     category: entry.category || 'Outros',
+                    isRecurring: true,
                     count: 0,
                     lastPurchasedAt: 0
                 };
@@ -1630,29 +1901,139 @@
                 products.set(key, product);
             });
 
-            const displaySuggestions = [...products.values()]
-                .sort((a, b) => b.count - a.count || a.lastPurchasedAt - b.lastPurchasedAt)
+            // Limita recorrências a 16 e completa a barra com padrões que ainda não aparecem no histórico.
+            const recurringSuggestions = [...products.values()]
+                .sort((a, b) => b.count - a.count || b.lastPurchasedAt - a.lastPurchasedAt)
                 .slice(0, 16);
-            if (displaySuggestions.length === 0) {
-                container.style.display = 'none';
-                return;
-            } else {
-                container.style.display = 'flex';
-            }
+            const displaySuggestions = [
+                ...recurringSuggestions,
+                ...defaultSuggestions.filter(product => !products.has(normalizeProductNameForMatching(product.name)))
+            ];
+            container.style.display = displaySuggestions.length ? 'flex' : 'none';
 
             displaySuggestions.forEach(prod => {
                 const clean = cleanProductName(prod.name);
-                const isPending = pendingMap.has(clean.toLowerCase());
-                const pendingItem = pendingMap.get(clean.toLowerCase());
+                const key = normalizeProductNameForMatching(clean);
+                const isPending = pendingMap.has(key);
+                const pendingItem = pendingMap.get(key);
 
                 const chip = document.createElement('button');
                 chip.type = 'button';
                 chip.className = `chip ${isPending ? 'chip-in-list' : ''}`;
-                chip.textContent = clean;
+                if (prod.isRecurring) chip.classList.add('chip-recurring');
+                chip.textContent = `${getProductIcon(clean, prod.category)} ${clean}`;
                 chip.title = clean;
                 chip.setAttribute('aria-label', `Adicionar ${clean} à lista`);
 
-                chip.addEventListener('click', () => {
+                // O bloqueio evita que soltar após arrastar também acione o clique de adicionar/somar.
+                let suppressClick = false;
+
+                if (prod.isRecurring) {
+                    // Estado e auxiliares locais do gesto: origem do ponteiro, modo de arraste e cópia visual.
+                    let pointerStart = null;
+                    let draggingToTrash = false;
+                    let dragGhost = null;
+                    // Cada auxiliar separa uma responsabilidade do gesto: cancelar clique, posicionar, criar, testar e limpar.
+                    const suppressNextClick = () => {
+                        suppressClick = true;
+                        setTimeout(() => { suppressClick = false; }, 500);
+                    };
+                    const positionDragGhost = (x, y) => {
+                        if (!dragGhost) return;
+                        const rect = trashOverlay.getBoundingClientRect();
+                        dragGhost.style.left = `${x - rect.left}px`;
+                        dragGhost.style.top = `${y - rect.top}px`;
+                    };
+                    const createDragGhost = (pointerType, x, y) => {
+                        dragGhost = document.createElement('div');
+                        dragGhost.className = 'recommendation-drag-ghost';
+                        dragGhost.setAttribute('aria-hidden', 'true');
+                        const name = document.createElement('span');
+                        name.textContent = chip.textContent;
+                        dragGhost.appendChild(name);
+                        if (pointerType === 'touch') {
+                            const finger = document.createElement('span');
+                            finger.className = 'recommendation-drag-finger';
+                            finger.textContent = '👆';
+                            dragGhost.appendChild(finger);
+                        }
+                        trashOverlay.appendChild(dragGhost);
+                        positionDragGhost(x, y);
+                        requestAnimationFrame(() => {
+                            if (dragGhost) dragGhost.classList.add('is-visible');
+                        });
+                    };
+                    const isOverTrash = (x, y) => {
+                        const rect = trashTarget.getBoundingClientRect();
+                        return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+                    };
+                    const resetTrashDrag = () => {
+                        pointerStart = null;
+                        draggingToTrash = false;
+                        chip.classList.remove('is-dragging');
+                        container.classList.remove('is-deleting-recommendation');
+                        trashTarget.classList.remove('is-ready');
+                        trashOverlay.classList.remove('active');
+                        if (dragGhost) dragGhost.remove();
+                        dragGhost = null;
+                    };
+
+                    // Só começa com o ponteiro principal; captura o ponteiro para continuar recebendo movimentos fora do chip.
+                    chip.addEventListener('pointerdown', e => {
+                        if (e.isPrimary === false || (e.button !== undefined && e.button !== 0)) return;
+                        pointerStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
+                        if (chip.setPointerCapture) chip.setPointerCapture(e.pointerId);
+                    });
+                    // Arraste vertical de 10 px abre a lixeira; arraste horizontal continua disponível para rolar sugestões.
+                    chip.addEventListener('pointermove', e => {
+                        if (!pointerStart || e.pointerId !== pointerStart.id) return;
+                        const dx = e.clientX - pointerStart.x;
+                        const dy = e.clientY - pointerStart.y;
+                        if (!draggingToTrash) {
+                            if (Math.abs(dy) < 10 || Math.abs(dy) <= Math.abs(dx)) return;
+                            draggingToTrash = true;
+                            chip.classList.add('is-dragging');
+                            container.classList.add('is-deleting-recommendation');
+                            trashOverlay.classList.add('active');
+                            createDragGhost(e.pointerType, e.clientX, e.clientY);
+                        }
+                        positionDragGhost(e.clientX, e.clientY);
+                        const overTrash = isOverTrash(e.clientX, e.clientY);
+                        trashTarget.classList.toggle('is-ready', overTrash);
+                        dragGhost.classList.toggle('is-over-trash', overTrash);
+                        if (e.cancelable) e.preventDefault();
+                    });
+                    // Exclui a recorrência somente se o ponteiro terminar dentro do alvo; fora dele, só limpa o gesto.
+                    chip.addEventListener('pointerup', e => {
+                        if (!pointerStart || e.pointerId !== pointerStart.id) return;
+                        const wasDragging = draggingToTrash;
+                        const dropOnTrash = wasDragging && isOverTrash(e.clientX, e.clientY);
+                        resetTrashDrag();
+                        if (wasDragging) suppressNextClick();
+                        if (!dropOnTrash) return;
+
+                        appData.purchaseHistory = appData.purchaseHistory.filter(entry => normalizeProductNameForMatching(cleanProductName(entry.name)) !== key);
+                        const saved = saveData();
+                        renderQuickChips();
+                        showToast(saved ? 'Recomendação recorrente removida' : SAVE_ERROR_MESSAGE);
+                    });
+                    // Cancelamentos do navegador ou do aparelho nunca excluem o histórico.
+                    chip.addEventListener('pointercancel', e => {
+                        if (!pointerStart || e.pointerId !== pointerStart.id) return;
+                        const wasDragging = draggingToTrash;
+                        resetTrashDrag();
+                        if (wasDragging) suppressNextClick();
+                    });
+                }
+
+                // Ação normal do chip: soma 1 à pendência existente ou cria um item novo com valores padrão.
+                chip.addEventListener('click', e => {
+                    if (suppressClick) {
+                        suppressClick = false;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
                     if (isPending && pendingItem) {
                         pendingItem.quantity = Math.round(((pendingItem.quantity || 1) + 1) * 10) / 10;
                         const saved = saveData();
@@ -1688,6 +2069,12 @@
             });
         }
 
+        /**
+         * Atualiza cabeçalho, totais, filtros visíveis e os grupos de pendentes/comprados.
+         * `allItems` é a lista ativa completa; `displayItems` aplica o filtro; os grupos separam compra concluída.
+         * `totalEstimate` e `filterEstimate` calculam valores, enquanto os elementos DOM guardam a saída.
+         * `purchasedCollapsed` controla apenas a exibição do grupo comprado, não os dados.
+         */
         function renderList() {
             const activeList = getActiveList();
             const listTitle = document.getElementById('header-list-name');
@@ -1706,6 +2093,7 @@
             arrow.appendChild(arrowHead);
             listTitle.appendChild(arrow);
 
+            // Primeiro seleciona todos os itens da lista; depois limita a visão se uma categoria estiver ativa.
             const allItems = getListItems();
             let displayItems = allItems;
             if (activeCategoryFilter !== 'Todos') {
@@ -1723,6 +2111,7 @@
             pendingGroup.innerHTML = '';
             purchasedGroup.innerHTML = '';
 
+            // O total geral permanece baseado em todos os pendentes, inclusive quando um filtro está selecionado.
             let totalEstimate = 0;
             allItems.filter(i => !i.purchased).forEach(item => {
                 if (item.price && item.quantity) {
@@ -1791,6 +2180,7 @@
             }
         }
 
+        /** Exclui um produto pelo ID, grava, atualiza todas as áreas dependentes e mostra o resultado do salvamento. */
         function deleteItem(itemId) {
             appData.items = appData.items.filter(i => i.id !== itemId);
             const saved = saveData();
@@ -1800,6 +2190,12 @@
             showToast(saved ? 'Produto removido' : SAVE_ERROR_MESSAGE);
         }
 
+        /**
+         * Liga clique, toque longo e arraste ao cartão de produto.
+         * `pressTimer`/`startX`/`startY` detectam toque longo sem confundir movimento;
+         * `swipeStart`/`swipeMoved` controlam o gesto horizontal e `deleteSwipeThreshold` é 150 px.
+         * `suppressClick` impede que um arraste concluído também marque o item como comprado.
+         */
         function bindCardEvents(card, itemId, deleteTrail) {
             let pressTimer = null;
             let startX = 0;
@@ -1810,6 +2206,7 @@
             let suppressClick = false;
             const deleteSwipeThreshold = 150;
 
+            // O toque longo abre a edição; guardar as coordenadas permite cancelá-lo quando o dedo se move.
             const startPress = (e) => {
                 if (e.target.closest('.item-check-btn')) return;
                 longPressTriggered = false;
@@ -1842,6 +2239,7 @@
                 }
             };
 
+            // Restaura o cartão e o rastro ao encerrar ou cancelar um arraste.
             const resetSwipe = () => {
                 swipeStart = null;
                 swipeMoved = false;
@@ -1859,6 +2257,7 @@
                 if (card.setPointerCapture) card.setPointerCapture(e.pointerId);
             };
 
+            // Só move horizontalmente quando esse eixo domina; o rastro cresce até o limite de exclusão.
             const moveSwipe = (e) => {
                 if (!swipeStart || e.pointerId !== swipeStart.id) return;
                 const deltaX = e.clientX - swipeStart.x;
@@ -1873,6 +2272,7 @@
                 e.preventDefault();
             };
 
+            // Ao soltar, limpa a animação e exclui somente se o deslocamento horizontal alcançar 150 px.
             const endSwipe = (e) => {
                 if (!swipeStart || e.pointerId !== swipeStart.id) return;
                 const deltaX = e.clientX - swipeStart.x;
@@ -1922,7 +2322,13 @@
             });
         }
 
+        /**
+         * Cria a estrutura visual de um produto e conecta seus controles.
+         * `shell` mantém o fundo/rastro, `card` recebe os gestos, `checkBtn` marca compra,
+         * `infoDiv` mostra nome/categoria/observação e `pricingDiv` mostra quantidade e preço total.
+         */
         function createItemCard(item) {
+            // O invólucro contém o cartão e o rastro que aparece por trás durante a exclusão.
             const shell = document.createElement('div');
             shell.className = `item-card-shell ${item.purchased ? 'purchased' : ''}`;
 
@@ -1950,6 +2356,8 @@
             const checkBtn = document.createElement('button');
             checkBtn.className = 'item-check-btn';
             checkBtn.title = item.purchased ? 'Retirar de comprados' : 'Marcar como comprado';
+            checkBtn.setAttribute('aria-label', `${checkBtn.title}: ${item.name}`);
+            checkBtn.setAttribute('aria-pressed', String(Boolean(item.purchased)));
             checkBtn.innerHTML = `
                 <span class="item-product-icon">${icon}</span>
                 <svg class="check-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -1961,6 +2369,7 @@
                 togglePurchased(item.id);
             });
 
+            // Área textual do cartão; a observação só aparece quando o campo note não está vazio.
             const infoDiv = document.createElement('div');
             infoDiv.className = 'item-info';
 
@@ -2016,6 +2425,7 @@
             return shell;
         }
 
+        /** Alterna o estado comprado e sincroniza o histórico usado pelas sugestões recorrentes. */
         function togglePurchased(itemId) {
             const item = appData.items.find(i => i.id === itemId);
             if (!item) return;
@@ -2037,6 +2447,7 @@
             else showToast(saved ? `"${item.name}" voltou para a lista` : SAVE_ERROR_MESSAGE);
         }
 
+        /** Mostra um aviso temporário; o botão Desfazer só aparece quando a ação permite reversão. */
         function showToast(msg, showUndo = false) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-msg');
@@ -2052,6 +2463,7 @@
             }, 3500);
         }
 
+        // Reverte a última marcação de compra e remove o registro correspondente do histórico oculto.
         document.getElementById('btn-undo').addEventListener('click', () => {
             let saved = true;
             if (lastToggledItemId) {
@@ -2071,6 +2483,13 @@
             if (!saved) showToast(SAVE_ERROR_MESSAGE);
         });
 
+        /**
+         * Converte um trecho da barra rápida em um objeto de produto.
+         * `text` é o trecho de trabalho; `quantity`, `unit` e `price` começam com padrões seguros;
+         * `notes` reúne promoção, contexto conhecido, parênteses, travessão e marcadores antes de formar `finalNote`.
+         * A ordem é: promoção/preço, observações, quantidade inicial, nome e categoria (`norm`).
+         * `customId` vem do cadastro em lote; se faltar, o objeto recebe um ID próprio.
+         */
         function parseQuickInput(rawText, customId = null) {
             let text = rawText.trim();
             if (!text) return null;
@@ -2080,6 +2499,7 @@
             let price = 0;
             const notes = [];
 
+            // `promoRegex` detecta a condição mesmo quando a palavra não está no fim; `trailingPromo` também a remove do nome.
             const promoRegex = /\b(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\b/i;
             if (promoRegex.test(text)) {
                 notes.push('Promoção');
@@ -2098,21 +2518,32 @@
                 text = text.substring(0, text.length - trailingParen[0].length).trim();
             }
 
+            // Primeiro tenta preço ligado a promoção; `priceMatch` cobre as formas gerais no fim do trecho.
             const promoPriceMatch = text.match(/(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\s*(?:de|por|a)?\s*(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)?\s*$/i);
             if (promoPriceMatch) {
                 price = parseFloat(promoPriceMatch[1].replace(',', '.'));
                 text = text.substring(0, text.length - promoPriceMatch[0].length).trim();
                 text = text.replace(/[-–—,:]$/, '').trim();
             } else {
-                const priceMatch = text.match(/(?:(?:r\$|rs|\$)\s*(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)|\b(?:por|a|de)\s+(\d+(?:[.,]\d{1,2})?)|(\d+[.,]\d{2}))\s*$/i);
-                if (priceMatch) {
-                    const valStr = priceMatch[1] || priceMatch[2] || priceMatch[3] || priceMatch[4];
+                const priceMatch = text.match(/(?:(?:r\$|rs|\$)\s*(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)|\b(?:por|a|de)\s+(\d+(?:[.,]\d{1,2})?)|(\d+[.,]\d{2})|\s+(\d+(?:[.,]\d{1,2})?))\s*$/i);
+                if (priceMatch && (!priceMatch[5] || /[^\d\s]/.test(text.slice(0, priceMatch.index)))) {
+                    const valStr = priceMatch[1] || priceMatch[2] || priceMatch[3] || priceMatch[4] || priceMatch[5];
                     price = parseFloat(valStr.replace(',', '.'));
                     text = text.substring(0, text.length - priceMatch[0].length).trim();
                     text = text.replace(/[-–—,:]$/, '').trim();
                 }
             }
 
+            // `contextNoteMatch` limita o contexto final a refeições/ocasiões conhecidas; outras frases com "para" ficam no nome.
+            // `contextNote` vira a observação e o trecho restante continua disponível para ler quantidade e nome.
+            const contextNoteMatch = text.match(/\s+((?:para|pra|pro)\s+(?:(?:a|o)\s+)?(?:janta|jantar|almoço|almoco|lanche|sobremesa|café da manhã|cafe da manha|festa|churrasco))\s*$/i);
+            if (contextNoteMatch) {
+                const contextNote = contextNoteMatch[1].trim();
+                notes.push(contextNote.charAt(0).toUpperCase() + contextNote.slice(1));
+                text = text.substring(0, text.length - contextNoteMatch[0].length).trim();
+            }
+
+            // Retira qualquer observação entre parênteses; `cleanP1` é o conteúdo que será salvo em notes.
             text = text.replace(/\(([^)]+)\)/g, (match, p1) => {
                 const cleanP1 = p1.trim();
                 if (cleanP1 && !notes.includes(cleanP1)) {
@@ -2123,6 +2554,7 @@
 
             text = text.replace(/\s*[-–—,]?\s*\b(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\b\s*/gi, ' ').trim();
 
+            // Travessão separado por espaços marca uma observação livre no fim do texto.
             const hyphenNoteMatch = text.match(/\s+[-–—]\s+(.+)$/);
             if (hyphenNoteMatch) {
                 const hContent = hyphenNoteMatch[1].trim();
@@ -2132,6 +2564,7 @@
                 text = text.substring(0, text.length - hyphenNoteMatch[0].length).trim();
             }
 
+            // `keywordNoteMatch` reconhece marcadores atuais; `kwContent` guarda o texto sem o prefixo obs/observação.
             const keywordNoteMatch = text.match(/\s+((?:obs|observa[çc][ãa]o):?\s*.+|tipo\s+.+|marca\s+.+|se\s+tiver\s+.+)$/i);
             if (keywordNoteMatch) {
                 let kwContent = keywordNoteMatch[1].trim();
@@ -2145,6 +2578,7 @@
 
             text = text.replace(/[-–—,:]$/, '').trim();
 
+            // Quantidade e unidade ficam antes do nome; `x` significa contagem e mantém unidade padrão `un`.
             const prefixMatch = text.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|un|pct|lt|cx|x)?\s+(.+)$/i);
             if (prefixMatch) {
                 quantity = parseFloat(prefixMatch[1].replace(',', '.'));
@@ -2154,20 +2588,21 @@
                 text = prefixMatch[3].trim();
             }
 
+            // A categoria é escolhida pelo nome já limpo; `norm` normaliza acentos/plural só para comparar regras.
             const capitalizedName = text.charAt(0).toUpperCase() + text.slice(1);
 
             const finalNote = notes.join(' • ');
 
             let category = 'Outros';
-            const norm = normalizeText(text);
+            const norm = normalizeProductNameForMatching(text);
 
-            if (/racao|sache|petisco|whiskas|pedigree|purina|areia.*gato|areia higienica|\bosso\b|\bpet\b|\bgatos?\b|\bcachorros?\b|\bcaes\b|\bcao\b/.test(norm)) {
+            if (/racao|sache|petisco|whiskas|pedigree|purina|areia.*gato|areia higienica|\bosso\b|\bpet\b|\bgato\b|\bcachorro\b|\bcao\b/.test(norm)) {
                 category = 'Pet Shop';
             } else if (/agua sanitaria|cloro|candida|detergente|sabao|amaciante|desinfetante|esponja|\bveja\b|limpador|omo|ariel|comfort|downy|bucha|bombril|palha de aco|saco de lixo|vassoura|rodo|inseticida|repelente/.test(norm)) {
                 category = 'Limpeza';
             } else if (/pao|bolo|torta|biscoito|bolacha|torrada|croissant|baguete|rosquinha|donut|sonho|pastel|coxinha|salgado/.test(norm)) {
                 category = 'Padaria';
-            } else if (/sorvete|picole|acai|hamburguer|nugget|nuggets|empanado|\bpizza\b|\bgelo\b|lasanha|congelad/.test(norm)) {
+            } else if (/sorvete|picole|acai|hamburguer|nugget|empanado|\bpizza\b|\bgelo\b|lasanha|congelad/.test(norm)) {
                 category = 'Congelados';
             } else if (/suco|nectar|polpa|cerveja|chopp|vinho|whisky|uisque|vodka|cachaca|gin|gim|rum|refrigerante|coca|guarana|fanta|sprite|pepsi|energetico|red bull|monster|espumante|champanhe|prosecco|\bcha\b|\bcafe\b|\bagua\b/.test(norm)) {
                 category = 'Bebidas';
@@ -2177,7 +2612,7 @@
                 category = 'Laticínios';
             } else if (/carne|frango|peixe|linguica|salsicha|alcatra|bife|costela|moida|bacon|picanha|contrafile|patinho|maminha|fraldinha|file|acem|cupim|sobrecoxa|peito de frango|asa|salmao|tilapia|bacalhau|atum|sardinha|camarao|polvo|lula|calabresa|presunto|mortadela|salame|copa/.test(norm)) {
                 category = 'Açougue';
-            } else if (/banana|\b(maca|macas)\b|laranja|limao|\b(uva|uvas)\b|morango|abacaxi|abacate|melancia|melao|manga|pessego|\b(pera|peras)\b|cereja|kiwi|\b(coco|cocos)\b|maracuja|goiaba|caju|mamao|tomate|alface|cebola|batata|fruta|cenoura|\b(alho|alhos)\b|legume|verdura|couve|espinafre|rucula|repolho|brocolis|couve-flor|pepino|pimentao|pimenta|berinjela|cogumelo|champignon|mandioca|aipim|macaxeira|beterraba|abobora|abobrinha|chuchu/.test(norm)) {
+            } else if (/banana|\bmaca\b|laranja|limao|\buva\b|morango|abacaxi|abacate|melancia|melao|manga|pessego|\bpera\b|cereja|kiwi|\bcoco\b|maracuja|goiaba|caju|mamao|tomate|alface|cebola|batata|fruta|cenoura|\balho\b|legume|verdura|couve|espinafre|rucula|repolho|brocolis|couve-flor|pepino|pimentao|pimenta|berinjela|cogumelo|champignon|mandioca|aipim|macaxeira|beterraba|abobora|abobrinha|chuchu/.test(norm)) {
                 category = 'Hortifrúti';
             } else if (/shampoo|xampu|sabonete|pasta de dente|creme dental|escova de dente|fio dental|papel higienico|desodorante|absorvente|barbeador|gillette|prestobarba|cotonete|protetor solar|hidratante|fralda|lenco umedecido/.test(norm)) {
                 category = 'Higiene';
@@ -2198,6 +2633,11 @@
             };
         }
 
+        /**
+         * Divide uma entrada em vários produtos sem separar vírgulas decimais ou vírgulas dentro de parênteses.
+         * `lines` aceita quebras de linha, `result` reúne trechos, `current` monta um trecho,
+         * `parenDepth` protege observações parentéticas e `prev`/`next` identificam casas decimais.
+         */
         function splitMultiItemText(raw) {
             if (!raw) return [];
             const lines = raw.split(/[\r\n]+/);
@@ -2241,6 +2681,11 @@
             return result;
         }
 
+        /**
+         * Orquestra o cadastro rápido: separa, interpreta, cria IDs, salva e atualiza a tela.
+         * `rawVal` é o texto digitado, `chunks` os produtos separados e `newItems` os objetos válidos;
+         * `saved` determina a mensagem final e `container` é rolado para mostrar os novos cartões.
+         */
         function addItemFromQuickInput() {
             const input = document.getElementById('quick-input');
             const rawVal = input.value;
@@ -2260,7 +2705,22 @@
 
             if (newItems.length === 0) return;
 
-            appData.items.unshift(...newItems);
+            newItems.forEach((item, index) => {
+                appData.registrationHistory.push({ name: item.name, category: item.category, purchasedAt: Date.now() });
+                const explicitUnit = /^\s*\d+(?:[.,]\d+)?\s*(kg|g|un|pct|lt|cx)\s+/i.test(chunks[index]);
+                const existing = appData.items.find(existingItem =>
+                    existingItem.listId === appData.activeListId && !existingItem.purchased &&
+                    normalizeProductNameForMatching(existingItem.name) === normalizeProductNameForMatching(item.name) &&
+                    (!explicitUnit || (existingItem.unit || 'un') === item.unit)
+                );
+                if (existing) {
+                    existing.quantity = Math.round(((existing.quantity || 1) + item.quantity) * 1000) / 1000;
+                    if (item.note) existing.note = [existing.note, item.note].filter(Boolean).join(' • ');
+                    if (item.price) existing.price = item.price;
+                } else {
+                    appData.items.unshift(item);
+                }
+            });
             const saved = saveData();
 
             if (activeCategoryFilter !== 'Todos') {
@@ -2274,7 +2734,7 @@
             renderList();
             renderQuickChips();
 
-            input.value = '';
+            if (saved) input.value = '';
             input.focus();
 
             const container = document.getElementById('list-container');
@@ -2287,6 +2747,7 @@
             }
         }
 
+        // Referência persistente ao campo para ligar Enter ao mesmo fluxo do botão de adicionar.
         const quickInput = document.getElementById('quick-input');
         quickInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -2299,11 +2760,13 @@
             addItemFromQuickInput();
         });
 
+        // Recolhe/expande apenas a apresentação dos comprados; os registros permanecem na lista.
         document.getElementById('toggle-purchased-btn').addEventListener('click', () => {
             purchasedCollapsed = !purchasedCollapsed;
             renderList();
         });
 
+        // Limpa comprados da lista atual somente após confirmação explícita do navegador.
         document.getElementById('btn-clear-purchased').addEventListener('click', () => {
             const purchasedCount = appData.items.filter(i => i.listId === appData.activeListId && i.purchased).length;
             if (purchasedCount === 0) {
@@ -2320,8 +2783,10 @@
             }
         });
 
+        // Valor de segurança da quantidade em edição quando o campo estiver temporariamente vazio ou inválido.
         let currentEditingQuantity = 1;
 
+        /** Define o passo do botão +/− de acordo com a unidade atualmente escolhida. */
         function getStepAmount() {
             const unit = document.getElementById('edit-unit').value;
             if (unit === 'kg') return 0.1;
@@ -2329,6 +2794,7 @@
             return 1;
         }
 
+        /** Mostra atalhos de peso para kg/g e liga cada botão ao campo de quantidade atual. */
         function updateWeightPresetsUI() {
             const unit = document.getElementById('edit-unit').value;
             const container = document.getElementById('weight-presets');
@@ -2367,6 +2833,7 @@
             });
         }
 
+        /** Preenche todos os campos com o produto existente antes de abrir a folha de edição. */
         function openEditModal(itemId) {
             const item = appData.items.find(i => i.id === itemId);
             if (!item) return;
@@ -2386,10 +2853,12 @@
             modal.classList.add('active');
         }
 
+        /** Fecha a folha de edição sem alterar o produto. */
         function closeEditModal() {
             document.getElementById('edit-modal').classList.remove('active');
         }
 
+        // Mudanças de unidade atualizam os atalhos de peso e o tamanho do passo do contador.
         document.getElementById('edit-unit').addEventListener('change', () => {
             updateWeightPresetsUI();
         });
@@ -2399,6 +2868,7 @@
             if (e.target.id === 'edit-modal') closeEditModal();
         });
 
+        // Os botões do contador aplicam o passo próprio da unidade e arredondam para três casas.
         document.getElementById('stepper-plus').addEventListener('click', (e) => {
             e.preventDefault();
             const step = getStepAmount();
@@ -2421,6 +2891,7 @@
             document.getElementById('stepper-val').value = current;
         });
 
+        // Mantém a última quantidade válida enquanto a pessoa edita o campo manualmente.
         document.getElementById('stepper-val').addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             if (!isNaN(val) && val > 0) {
@@ -2428,6 +2899,7 @@
             }
         });
 
+        // Valida nome/quantidade, copia os campos para o produto, salva e redesenha as áreas afetadas.
         document.getElementById('btn-save-item').addEventListener('click', () => {
             const id = document.getElementById('edit-id').value;
             const item = appData.items.find(i => i.id === id);
@@ -2440,11 +2912,16 @@
             }
 
             const inputQty = parseFloat(document.getElementById('stepper-val').value);
+            const priceInput = document.getElementById('edit-price').value.trim();
+            const priceVal = priceInput === '' ? 0 : Number(priceInput);
+            if (!Number.isFinite(priceVal) || priceVal < 0 || (Number.isFinite(inputQty) && inputQty <= 0) || inputQty === Infinity) {
+                alert('Informe uma quantidade maior que zero e um preço válido, sem valor negativo.');
+                return;
+            }
             item.quantity = (!isNaN(inputQty) && inputQty > 0) ? inputQty : (currentEditingQuantity || 1);
             item.name = name;
             item.unit = document.getElementById('edit-unit').value;
-            const priceVal = parseFloat(document.getElementById('edit-price').value);
-            item.price = isNaN(priceVal) ? 0 : priceVal;
+            item.price = priceVal;
             item.category = document.getElementById('edit-category').value;
             item.note = document.getElementById('edit-note').value.trim();
 
@@ -2452,16 +2929,22 @@
             renderFilterChips();
             renderList();
             renderQuickChips();
+            if (!saved) {
+                alert(SAVE_ERROR_MESSAGE);
+                return;
+            }
             closeEditModal();
             showToast(saved ? 'Produto atualizado' : SAVE_ERROR_MESSAGE);
         });
 
+        // A exclusão pela folha reaproveita a mesma função usada pelo gesto no cartão.
         document.getElementById('btn-delete-item').addEventListener('click', () => {
             const id = document.getElementById('edit-id').value;
             closeEditModal();
             deleteItem(id);
         });
 
+        // Referência reaproveitada para abrir/fechar o seletor de listas.
         const listsModal = document.getElementById('lists-modal');
         document.getElementById('btn-select-list').addEventListener('click', () => {
             renderListsManager();
@@ -2476,12 +2959,59 @@
             if (e.target.id === 'lists-modal') listsModal.classList.remove('active');
         });
 
+        // A confirmação guarda somente o ID da lista escolhida até Cancelar ou Excluir.
+        const deleteListModal = document.getElementById('delete-list-modal');
+        let listPendingDeletion = null;
+        /** Limpa a escolha pendente e fecha a confirmação sem excluir nada. */
+        function closeDeleteListModal() {
+            listPendingDeletion = null;
+            deleteListModal.classList.remove('active');
+        }
+        // Cancelar, tocar no fundo ou pressionar Escape fecham a confirmação sem modificar os dados.
+        document.getElementById('cancel-delete-list').addEventListener('click', closeDeleteListModal);
+        deleteListModal.addEventListener('click', e => {
+            if (e.target === deleteListModal) closeDeleteListModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && deleteListModal.classList.contains('active')) closeDeleteListModal();
+        });
+        // Exclusão confirmada: saveData restaura listas, itens e lista ativa em conjunto se a gravação falhar.
+        document.getElementById('confirm-delete-list').addEventListener('click', () => {
+            const list = appData.lists.find(entry => entry.id === listPendingDeletion);
+            if (!list || appData.lists.length <= 1) { closeDeleteListModal(); return; }
+            appData.lists = appData.lists.filter(entry => entry.id !== list.id);
+            appData.items = appData.items.filter(item => item.listId !== list.id);
+            if (appData.activeListId === list.id) appData.activeListId = appData.lists[0].id;
+            if (!saveData()) {
+                alert(SAVE_ERROR_MESSAGE);
+                return;
+            }
+            closeDeleteListModal();
+            activeCategoryFilter = 'Todos';
+            renderListsManager();
+            renderFilterChips();
+            renderList();
+            renderQuickChips();
+        });
+
+        /**
+         * Desenha as listas disponíveis e liga cada cartão a seleção e arraste para exclusão.
+         * `count` mostra pendências; `shell`/`trail`/`div` compõem o cartão visual.
+         * `start`, `moved` e `suppressClick` controlam o gesto; `reset` restaura o cartão;
+         * a última lista não pode ser arrastada para excluir e qualquer exclusão pede confirmação.
+         */
         function renderListsManager() {
             const container = document.getElementById('lists-container');
             container.innerHTML = '';
 
             appData.lists.forEach(list => {
                 const count = appData.items.filter(i => i.listId === list.id && !i.purchased).length;
+                const shell = document.createElement('div');
+                shell.className = 'list-swipe-shell';
+                const trail = document.createElement('div');
+                trail.className = 'item-delete-trail';
+                trail.setAttribute('aria-hidden', 'true');
+                trail.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"></path></svg><span>Excluir</span>';
                 const div = document.createElement('div');
                 div.className = `list-selector-item ${list.id === appData.activeListId ? 'active' : ''}`;
                 const details = document.createElement('div');
@@ -2499,7 +3029,57 @@
                     active.textContent = '✓ Ativa';
                     div.appendChild(active);
                 }
+                // Estado isolado por cartão: início do ponteiro, movimento real e bloqueio do clique após arrastar.
+                let start = null;
+                let moved = false;
+                let suppressClick = false;
+                // Limpa deslocamento e rastro tanto após soltar quanto após cancelar o ponteiro.
+                const reset = () => {
+                    start = null;
+                    div.style.transform = '';
+                    trail.style.opacity = '0';
+                };
+                // Impede iniciar exclusão quando há apenas uma lista e captura o ponteiro durante o gesto.
+                div.addEventListener('pointerdown', e => {
+                    if (appData.lists.length <= 1 || e.isPrimary === false || (e.button !== undefined && e.button !== 0)) return;
+                    suppressClick = false;
+                    start = { x: e.clientX, y: e.clientY, id: e.pointerId };
+                    moved = false;
+                    if (div.setPointerCapture) div.setPointerCapture(e.pointerId);
+                });
+                div.addEventListener('pointermove', e => {
+                    if (!start || e.pointerId !== start.id) return;
+                    if (appData.lists.length <= 1) { reset(); return; }
+                    const dx = e.clientX - start.x;
+                    const dy = e.clientY - start.y;
+                    if (Math.abs(dx) <= 8 || Math.abs(dx) <= Math.abs(dy)) return;
+                    moved = true;
+                    div.style.transform = `translateX(${dx}px)`;
+                    trail.style.justifyContent = dx < 0 ? 'flex-end' : 'flex-start';
+                    trail.style.opacity = String(Math.min(Math.abs(dx) / 150, 1));
+                    e.preventDefault();
+                });
+                // O limite de 150 px abre confirmação; soltar antes dele mantém a lista intacta.
+                div.addEventListener('pointerup', e => {
+                    if (!start || e.pointerId !== start.id) return;
+                    const dx = e.clientX - start.x;
+                    const dy = e.clientY - start.y;
+                    const shouldDelete = Math.abs(dx) >= 150 && Math.abs(dx) > Math.abs(dy);
+                    if (moved || (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy))) {
+                        suppressClick = true;
+                    }
+                    reset();
+                    if (!shouldDelete) return;
+                    if (appData.lists.length <= 1) return;
+                    listPendingDeletion = list.id;
+                    document.getElementById('delete-list-description').textContent = `Excluir a lista "${list.name}" e todos os produtos dela?`;
+                    deleteListModal.classList.add('active');
+                    document.getElementById('cancel-delete-list').focus();
+                });
+                div.addEventListener('pointercancel', reset);
+                // Clique simples torna a lista ativa; um clique gerado pelo gesto é descartado.
                 div.addEventListener('click', () => {
+                    if (suppressClick) { suppressClick = false; return; }
                     appData.activeListId = list.id;
                     activeCategoryFilter = 'Todos';
                     const saved = saveData();
@@ -2509,10 +3089,12 @@
                     listsModal.classList.remove('active');
                     if (!saved) showToast(SAVE_ERROR_MESSAGE);
                 });
-                container.appendChild(div);
+                shell.append(trail, div);
+                container.appendChild(shell);
             });
         }
 
+        // Cria uma lista nomeada, ativa-a, limpa o filtro e redesenha as regiões que dependem dela.
         document.getElementById('btn-create-list').addEventListener('click', () => {
             const input = document.getElementById('new-list-name');
             const name = input.value.trim();
@@ -2527,7 +3109,7 @@
             appData.activeListId = newList.id;
             activeCategoryFilter = 'Todos';
             const saved = saveData();
-            input.value = '';
+            if (saved) input.value = '';
             renderFilterChips();
             renderList();
             renderQuickChips();
@@ -2535,8 +3117,10 @@
             showToast(saved ? `Lista "${name}" criada` : SAVE_ERROR_MESSAGE);
         });
 
+        // Modal de compartilhamento usado tanto para mostrar a prévia quanto para fechá-la após copiar.
         const shareModal = document.getElementById('share-modal');
         document.getElementById('btn-share').addEventListener('click', () => {
+            // Só pendências entram no texto; `pendingTotal` soma os preços dessas mesmas linhas.
             const activeList = getActiveList();
             const items = getListItems();
             const pending = items.filter(i => !i.purchased);
@@ -2550,6 +3134,7 @@
 
             if (pending.length > 0) {
                 text += `📝 *Para comprar*\n\n`;
+                // Agrupa as linhas pela ordem padrão das categorias; itens com categoria desconhecida ficam em Outros.
                 const categories = CATEGORIES_LIST.filter(category => category.id !== 'Todos');
                 categories.forEach(category => {
                     const categoryItems = pending.filter(item => {
@@ -2575,6 +3160,7 @@
             shareModal.classList.add('active');
         });
 
+        // Fechar pelo botão ou pelo fundo não altera o texto nem os itens.
         document.getElementById('btn-close-share').addEventListener('click', () => {
             shareModal.classList.remove('active');
         });
@@ -2583,6 +3169,7 @@
             if (e.target.id === 'share-modal') shareModal.classList.remove('active');
         });
 
+        // Usa a área de transferência quando disponível; em caso contrário deixa a prévia pronta para cópia manual.
         document.getElementById('btn-copy-share').addEventListener('click', () => {
             const text = document.getElementById('share-text-preview').textContent;
             if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
@@ -2597,20 +3184,14 @@
             });
         });
 
+        // O botão de tema delega para a mesma função usada durante a inicialização.
         document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
 
-        let lastTimeStr = '';
-        function updateClock() {
-            const clockEl = document.getElementById('status-clock');
-            if (!clockEl) return;
-            const now = new Date();
-            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-            if (timeStr !== lastTimeStr) {
-                lastTimeStr = timeStr;
-                clockEl.textContent = timeStr;
-            }
-        }
-
+        /**
+         * Permite rolar horizontalmente uma faixa com mouse ou roda do mouse.
+         * `isDown`/`startX`/`scrollLeft` registram o arraste; `hasMoved` impede clique falso após rolar.
+         * O gesto não interfere na lixeira de recomendações enquanto ela está ativa.
+         */
         function makeDraggable(container) {
             if (!container) return;
             let isDown = false;
@@ -2618,6 +3199,7 @@
             let scrollLeft = 0;
             let hasMoved = false;
 
+            // O arraste por mouse registra a posição inicial e o deslocamento atual da faixa.
             container.addEventListener('mousedown', (e) => {
                 isDown = true;
                 hasMoved = false;
@@ -2626,6 +3208,7 @@
                 scrollLeft = container.scrollLeft;
             });
 
+            // Soltar em qualquer lugar da página encerra o arraste iniciado dentro da faixa.
             document.addEventListener('mouseup', () => {
                 if (isDown) {
                     isDown = false;
@@ -2634,7 +3217,7 @@
             });
 
             container.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
+                if (!isDown || container.classList.contains('is-deleting-recommendation')) return;
                 e.preventDefault();
                 const x = e.pageX - container.offsetLeft;
                 const walk = (x - startX) * 1.5;
@@ -2652,6 +3235,7 @@
                 }
             }, true);
 
+            // A roda vertical também rola horizontalmente quando há conteúdo que não cabe na faixa.
             container.addEventListener('wheel', (e) => {
                 if (e.deltaY !== 0 && container.scrollWidth > container.clientWidth) {
                     e.preventDefault();
@@ -2660,6 +3244,7 @@
             }, { passive: false });
         }
 
+        // Inicialização em ordem: preferências e dados primeiro, depois interface e gestos dependentes do DOM.
         initTheme();
         loadData();
         renderFilterChips();
@@ -2667,11 +3252,6 @@
         renderQuickChips();
         makeDraggable(document.getElementById('category-filter-chips'));
         makeDraggable(document.getElementById('quick-chips'));
-        updateClock();
-        setInterval(updateClock, 1000);
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) updateClock();
-        });
     </script>
 </body>
 </html>
