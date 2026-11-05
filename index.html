@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>Lista de Compras - Protótipo Android</title>
     <style>
         /* Regras globais: deixam os elementos previsíveis e removem margens padrão do navegador. */
@@ -96,7 +96,7 @@
             background-image: radial-gradient(ellipse at 50% 0%, #1e293b 0%, #0b111a 80%);
             color: var(--text-primary);
             font-family: var(--font-family);
-            font-size: 15px;
+            font-size: 16px;
             line-height: 1.4;
             display: flex;
             justify-content: center;
@@ -107,6 +107,7 @@
 
         /* Moldura do celular: também é o contêiner de posição para folhas, alertas e lixeira. */
         .phone-frame {
+            --ad-height: 64px;
             width: 100%;
             max-width: 420px;
             height: 860px;
@@ -121,7 +122,7 @@
         }
 
         .ad-area {
-            min-height: 64px;
+            min-height: var(--ad-height);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -818,6 +819,19 @@
             opacity: 1;
         }
 
+        /* Mantém o anúncio visível enquanto o gerenciador de listas está aberto. */
+        #lists-modal { top: var(--ad-height); }
+
+        /* Apresentação inicial usa a mesma paleta do aplicativo e cabe em telas pequenas. */
+        .tutorial-overlay { align-items: center; padding: 20px; z-index: 70; }
+        .tutorial-card { width: 100%; max-width: 360px; max-height: 100%; overflow-y: auto; padding: 28px 24px; border-radius: 24px; background: var(--surface); box-shadow: var(--shadow-lg); text-align: center; }
+        .tutorial-icon { font-size: 42px; margin-bottom: 14px; }
+        .tutorial-card h2 { font-size: 21px; margin-bottom: 10px; }
+        .tutorial-card p { color: var(--text-secondary); line-height: 1.5; }
+        .tutorial-progress { font-size: 13px; margin: 18px 0; }
+        .tutorial-actions { display: flex; gap: 10px; }
+        .tutorial-actions button { min-height: 48px; }
+
         .bottom-sheet {
             width: 100%;
             background-color: var(--surface);
@@ -901,6 +915,8 @@
             gap: 12px;
         }
 
+        .form-row > .form-group { min-width: 0; }
+
         /* Controles de quantidade e atalhos de peso usados no formulário de edição. */
         .stepper-container {
             display: flex;
@@ -931,6 +947,7 @@
 
         .stepper-input {
             flex: 1;
+            width: 0;
             text-align: center;
             font-weight: 600;
             font-size: 15px;
@@ -1134,12 +1151,49 @@
             height: 0;
         }
 
+        /* Leitura e áreas de toque maiores em toda a interface. */
+        .app-header { padding: 12px 10px; }
+        .header-left { min-width: 0; flex: 1; min-height: 48px; }
+        .header-actions { gap: 0; flex-shrink: 0; }
+        .app-title-group { min-width: 0; }
+        .app-title-group h1 { font-size: 19px; }
+        .app-title-group span { font-size: 14px; }
+        .btn-icon, .btn-add, .item-check-btn { width: 48px; height: 48px; }
+        .btn-icon { flex-shrink: 0; }
+        .btn-icon svg { width: 24px; height: 24px; }
+        .totals-bar { font-size: 16px; padding: 10px 14px; gap: 8px; }
+        .totals-price { font-size: 17px; padding: 5px 9px; }
+        .filter-chip, .chip, .preset-chip { min-height: 44px; font-size: 15px; }
+        .filter-chip .chip-count { font-size: 13px; }
+        .item-card { min-height: 72px; padding: 12px; gap: 10px; }
+        .item-product-icon { font-size: 24px; }
+        .item-name { font-size: 17px; white-space: normal; overflow-wrap: anywhere; }
+        .item-meta, .item-category-tag, .item-quantity-pill, .item-price-val { font-size: 14px; }
+        .section-header, .empty-placeholder p { font-size: 15px; }
+        .quick-input, .quick-input::placeholder { font-size: 16px; }
+        .quick-input { min-width: 0; min-height: 48px; }
+        .app-content { padding-bottom: 170px; }
+        .form-label, .dialog-desc { font-size: 15px; }
+        .form-input, .form-select, .stepper-input { font-size: 16px; }
+        .form-input, .form-select, .stepper-btn { min-height: 48px; }
+        .stepper-btn { width: 48px; height: 48px; flex-shrink: 0; }
+        .btn-primary, .btn-secondary, .btn-danger { min-height: 48px; font-size: 16px; }
+        .toast-snack, .toast-undo, .share-preview { font-size: 15px; }
+        .toast-undo { min-height: 44px; }
+        .tutorial-progress { font-size: 15px; }
+
+        @media (max-width: 410px) {
+            .form-row { flex-wrap: wrap; }
+            .form-row > .form-group { flex: 1 1 100% !important; min-width: 0; }
+        }
+
         /* Em telas estreitas, a moldura ocupa o celular inteiro e deixa de parecer um aparelho dentro da página. */
         @media (max-width: 480px) {
             body {
                 padding: 0;
                 background: var(--surface);
                 align-items: stretch;
+                min-height: 100dvh;
             }
 
             .phone-frame {
@@ -1263,6 +1317,20 @@
             </div>
         </div>
 
+        <!-- Apresentação opcional mostrada até ser concluída ou pulada neste navegador. -->
+        <div class="modal-overlay tutorial-overlay" id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" aria-describedby="tutorial-description">
+            <div class="tutorial-card">
+                <div class="tutorial-icon" id="tutorial-icon" aria-hidden="true"></div>
+                <h2 id="tutorial-title"></h2>
+                <p id="tutorial-description"></p>
+                <p class="tutorial-progress" id="tutorial-progress" aria-live="polite"></p>
+                <div class="tutorial-actions">
+                    <button type="button" class="btn-secondary" id="tutorial-skip">Pular</button>
+                    <button type="button" class="btn-primary" id="tutorial-next">Próximo</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Formulário de edição; os IDs dos campos são lidos e atualizados pelas funções de edição. -->
         <div class="modal-overlay" id="edit-modal">
             <div class="bottom-sheet">
@@ -1302,6 +1370,7 @@
                             <option value="g">g</option>
                             <option value="pct">pct</option>
                             <option value="lt">lt</option>
+                            <option value="ml">ml</option>
                             <option value="cx">cx</option>
                             <option value="dz">dz</option>
                         </select>
@@ -1312,7 +1381,7 @@
 
                 <div class="form-row">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label" for="edit-price">Preço Unitário (R$)</label>
+                        <label class="form-label" for="edit-price" id="edit-price-label">Preço (R$)</label>
                         <input type="number" step="0.01" min="0" id="edit-price" class="form-input" placeholder="0,00">
                     </div>
 
@@ -1465,6 +1534,7 @@
         let lastToggledItemId = null;
         let lastToggledPurchaseHistoryId = null;
         let undoTimeout = null;
+        let undoAction = null;
         let purchasedCollapsed = false;
 
         /** Remove acentos e espaços externos e converte para minúsculas sem alterar o texto salvo. */
@@ -1657,6 +1727,11 @@
             return name.charAt(0).toUpperCase() + name.slice(1);
         }
 
+        /** Identifica uma variante pela combinação de nome, observação e unidade. */
+        function recommendationKey(item) {
+            return JSON.stringify([normalizeProductNameForMatching(cleanProductName(item.name)), normalizeText(item.note || ''), item.unit || 'un']);
+        }
+
         /** Garante que dados antigos ou incompletos tenham uma lista de histórico utilizável. */
         function initPurchaseHistory() {
             if (!Array.isArray(appData.purchaseHistory)) appData.purchaseHistory = [];
@@ -1670,6 +1745,9 @@
                 itemId: item.id,
                 name: cleanProductName(item.name),
                 category: item.category || 'Outros',
+                note: item.note || '',
+                unit: item.unit || 'un',
+                quantity: item.quantity || 1,
                 purchasedAt: Date.now()
             };
             appData.purchaseHistory.unshift(entry);
@@ -1701,28 +1779,21 @@
                         parsed.items.every(item => item && item.id != null && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId) &&
                             (item.quantity == null || (Number.isFinite(item.quantity) && item.quantity > 0)) &&
                             (item.price == null || (Number.isFinite(item.price) && item.price >= 0)) &&
+                            (item.priceBasis == null || ['unit', 'kg', 'total'].includes(item.priceBasis)) &&
                             ['unit', 'category', 'note'].every(field => item[field] == null || typeof item[field] === 'string') &&
                             (item.purchased == null || typeof item.purchased === 'boolean')) &&
                         (parsed.purchaseHistory == null || (Array.isArray(parsed.purchaseHistory) && parsed.purchaseHistory.every(entry =>
                             entry && entry.id != null && entry.itemId != null && typeof entry.name === 'string' &&
-                            (entry.category == null || typeof entry.category === 'string') && Number.isFinite(entry.purchasedAt)
+                            (entry.category == null || typeof entry.category === 'string') && (entry.note == null || typeof entry.note === 'string') && (entry.unit == null || typeof entry.unit === 'string') && (entry.quantity == null || (Number.isFinite(entry.quantity) && entry.quantity > 0)) && Number.isFinite(entry.purchasedAt)
                         ))) &&
                         (parsed.registrationHistory == null || (Array.isArray(parsed.registrationHistory) && parsed.registrationHistory.every(entry =>
-                            entry && typeof entry.name === 'string' && typeof entry.category === 'string' && Number.isFinite(entry.purchasedAt)
+                            entry && typeof entry.name === 'string' && typeof entry.category === 'string' && (entry.note == null || typeof entry.note === 'string') && (entry.unit == null || typeof entry.unit === 'string') && (entry.quantity == null || (Number.isFinite(entry.quantity) && entry.quantity > 0)) && Number.isFinite(entry.purchasedAt)
                         )));
 
                     if (validData) {
                         appData = parsed;
                         initPurchaseHistory();
                         lastSavedData = JSON.stringify(appData);
-                        let changed = false;
-                        appData.items.forEach(item => {
-                            if (/rtx|placa|teclado|mouse|fone|cabo|carregador/i.test(item.name) && item.category === 'Mercearia') {
-                                item.category = 'Outros';
-                                changed = true;
-                            }
-                        });
-                        if (changed && !saveData()) showToast(SAVE_ERROR_MESSAGE);
                     } else {
                         dataLoadFailed = true;
                         console.warn('Dados locais inválidos; mantendo o conteúdo salvo sem sobrescrevê-lo.');
@@ -1811,6 +1882,13 @@
             return Number(amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
+        /** Usa a referência do preço em todos os totais; itens antigos mantêm o cálculo anterior. */
+        function itemSubtotal(item) {
+            if (!item.price || !item.quantity) return 0;
+            const quantity = item.priceBasis === 'total' ? 1 : item.priceBasis === 'kg' && item.unit === 'g' ? item.quantity / 1000 : item.quantity;
+            return Math.round((item.price * quantity + Number.EPSILON) * 100) / 100;
+        }
+
         /**
          * Recria os filtros a partir das categorias que têm produtos na lista ativa.
          * `container` recebe os botões, `items` e `pendingItems` sustentam as contagens,
@@ -1851,7 +1929,7 @@
 
         /**
          * Monta recomendações recorrentes primeiro e sugestões padrão depois, sem duplicar nomes.
-         * `pendingMap` permite somar quantidade com um toque; `products` agrupa o histórico por nome;
+         * `pendingMap` identifica pendências; `products` agrupa histórico por nome, observação e unidade;
          * `recurringSuggestions` ordena por frequência/recência e `displaySuggestions` é o resultado visível.
          * Cada chip adiciona/soma um item; apenas chips recorrentes podem ser arrastados à lixeira,
          * o que remove o histórico e preserva o item da lista.
@@ -1876,19 +1954,22 @@
             const pendingMap = new Map();
             currentItems.forEach(i => {
                 if (!i.purchased && i.name) {
-                    pendingMap.set(normalizeProductNameForMatching(i.name), i);
+                    pendingMap.set(recommendationKey(i), i);
                 }
             });
 
             // O histórico é oculto: sua frequência e data da última compra determinam a ordem das recorrências.
             const products = new Map();
-            const registeredNames = new Set(appData.registrationHistory.map(entry => normalizeProductNameForMatching(cleanProductName(entry.name))));
-            [...appData.registrationHistory, ...appData.purchaseHistory.filter(entry => !registeredNames.has(normalizeProductNameForMatching(cleanProductName(entry.name))))].forEach(entry => {
+            const registeredNames = new Set(appData.registrationHistory.map(recommendationKey));
+            [...appData.registrationHistory, ...appData.purchaseHistory.filter(entry => !registeredNames.has(recommendationKey(entry)))].forEach(entry => {
                 const clean = cleanProductName(entry.name);
-                const key = normalizeProductNameForMatching(clean);
+                const key = recommendationKey(entry);
                 const product = products.get(key) || {
                     name: clean,
                     category: entry.category || 'Outros',
+                    note: entry.note || '',
+                    unit: entry.unit || 'un',
+                    quantity: entry.quantity || 1,
                     isRecurring: true,
                     count: 0,
                     lastPurchasedAt: 0
@@ -1897,6 +1978,7 @@
                 if (entry.purchasedAt >= product.lastPurchasedAt) {
                     product.lastPurchasedAt = entry.purchasedAt;
                     if (entry.category) product.category = entry.category;
+                    product.quantity = entry.quantity || 1;
                 }
                 products.set(key, product);
             });
@@ -1907,13 +1989,13 @@
                 .slice(0, 16);
             const displaySuggestions = [
                 ...recurringSuggestions,
-                ...defaultSuggestions.filter(product => !products.has(normalizeProductNameForMatching(product.name)))
+                ...defaultSuggestions.filter(product => !products.has(recommendationKey(product)))
             ];
             container.style.display = displaySuggestions.length ? 'flex' : 'none';
 
             displaySuggestions.forEach(prod => {
                 const clean = cleanProductName(prod.name);
-                const key = normalizeProductNameForMatching(clean);
+                const key = recommendationKey(prod);
                 const isPending = pendingMap.has(key);
                 const pendingItem = pendingMap.get(key);
 
@@ -1921,9 +2003,10 @@
                 chip.type = 'button';
                 chip.className = `chip ${isPending ? 'chip-in-list' : ''}`;
                 if (prod.isRecurring) chip.classList.add('chip-recurring');
-                chip.textContent = `${getProductIcon(clean, prod.category)} ${clean}`;
-                chip.title = clean;
-                chip.setAttribute('aria-label', `Adicionar ${clean} à lista`);
+                const label = `${clean}${prod.note ? ` (${prod.note})` : ''}${prod.unit && prod.unit !== 'un' ? ` · ${prod.unit}` : ''}`;
+                chip.textContent = `${getProductIcon(clean, prod.category)} ${label}`;
+                chip.title = label;
+                chip.setAttribute('aria-label', `Adicionar ${label} à lista`);
 
                 // O bloqueio evita que soltar após arrastar também acione o clique de adicionar/somar.
                 let suppressClick = false;
@@ -2012,8 +2095,8 @@
                         if (wasDragging) suppressNextClick();
                         if (!dropOnTrash) return;
 
-                        appData.purchaseHistory = appData.purchaseHistory.filter(entry => normalizeProductNameForMatching(cleanProductName(entry.name)) !== key);
-                        appData.registrationHistory = appData.registrationHistory.filter(entry => normalizeProductNameForMatching(cleanProductName(entry.name)) !== key);
+                        appData.purchaseHistory = appData.purchaseHistory.filter(entry => recommendationKey(entry) !== key);
+                        appData.registrationHistory = appData.registrationHistory.filter(entry => recommendationKey(entry) !== key);
                         const saved = saveData();
                         renderQuickChips();
                         showToast(saved ? 'Recomendação recorrente removida' : SAVE_ERROR_MESSAGE);
@@ -2036,7 +2119,11 @@
                         return;
                     }
                     if (isPending && pendingItem) {
-                        pendingItem.quantity = Math.round(((pendingItem.quantity || 1) + 1) * 10) / 10;
+                        if (['kg', 'g', 'lt', 'ml'].includes(pendingItem.unit)) {
+                            openEditModal(pendingItem.id);
+                            return;
+                        }
+                        pendingItem.quantity = Math.round(((pendingItem.quantity || 1) + 1) * 1000) / 1000;
                         const saved = saveData();
                         renderList();
                         renderQuickChips();
@@ -2046,11 +2133,11 @@
                             id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
                             listId: appData.activeListId,
                             name: clean,
-                            quantity: 1,
-                            unit: 'un',
+                            quantity: prod.quantity || 1,
+                            unit: prod.unit || 'un',
                             price: 0,
                             category: prod.category || 'Outros',
-                            note: '',
+                            note: prod.note || '',
                             purchased: false
                         };
                         appData.items.unshift(newItem);
@@ -2064,6 +2151,7 @@
                         renderList();
                         renderQuickChips();
                         showToast(saved ? `"${clean}" adicionado à lista` : SAVE_ERROR_MESSAGE);
+                        if (saved && ['kg', 'g', 'lt', 'ml'].includes(newItem.unit)) openEditModal(newItem.id);
                     }
                 });
                 container.appendChild(chip);
@@ -2116,7 +2204,7 @@
             let totalEstimate = 0;
             allItems.filter(i => !i.purchased).forEach(item => {
                 if (item.price && item.quantity) {
-                    totalEstimate += (item.price * item.quantity);
+                    totalEstimate += itemSubtotal(item);
                 }
             });
 
@@ -2129,7 +2217,7 @@
                 let filterEstimate = 0;
                 displayItems.filter(i => !i.purchased).forEach(item => {
                     if (item.price && item.quantity) {
-                        filterEstimate += (item.price * item.quantity);
+                        filterEstimate += itemSubtotal(item);
                     }
                 });
                 document.getElementById('totals-count-text').textContent = 
@@ -2183,12 +2271,23 @@
 
         /** Exclui um produto pelo ID, grava, atualiza todas as áreas dependentes e mostra o resultado do salvamento. */
         function deleteItem(itemId) {
+            const index = appData.items.findIndex(i => i.id === itemId);
+            if (index < 0) return;
+            const removedItem = appData.items[index];
             appData.items = appData.items.filter(i => i.id !== itemId);
             const saved = saveData();
             renderFilterChips();
             renderList();
             renderQuickChips();
-            showToast(saved ? 'Produto removido' : SAVE_ERROR_MESSAGE);
+            showToast(saved ? 'Produto removido' : SAVE_ERROR_MESSAGE, saved ? () => {
+                if (!appData.lists.some(list => list.id === removedItem.listId) || appData.items.some(item => item.id === removedItem.id)) return false;
+                appData.items.splice(Math.min(index, appData.items.length), 0, removedItem);
+                const restored = saveData();
+                renderFilterChips();
+                renderList();
+                renderQuickChips();
+                return restored;
+            } : false);
         }
 
         /**
@@ -2408,7 +2507,7 @@
             pricingDiv.appendChild(qPill);
 
             if (item.price && item.price > 0) {
-                const priceTotal = (item.price * (item.quantity || 1));
+                const priceTotal = itemSubtotal(item);
                 const priceEl = document.createElement('div');
                 priceEl.className = 'item-price-val';
                 priceEl.textContent = formatMoney(priceTotal);
@@ -2455,19 +2554,27 @@
             const btnUndo = document.getElementById('btn-undo');
 
             toastMsg.textContent = msg;
+            undoAction = typeof showUndo === 'function' ? showUndo : null;
             btnUndo.style.display = showUndo ? 'inline-block' : 'none';
             toast.classList.add('show');
 
             if (undoTimeout) clearTimeout(undoTimeout);
             undoTimeout = setTimeout(() => {
                 toast.classList.remove('show');
+                undoAction = null;
             }, 3500);
         }
 
         // Reverte a última marcação de compra e remove o registro correspondente do histórico oculto.
         document.getElementById('btn-undo').addEventListener('click', () => {
             let saved = true;
-            if (lastToggledItemId) {
+            let retryAction = null;
+            if (undoAction) {
+                const action = undoAction;
+                undoAction = null;
+                saved = action();
+                if (!saved) retryAction = action;
+            } else if (lastToggledItemId) {
                 const item = appData.items.find(i => i.id === lastToggledItemId);
                 if (item) {
                     item.purchased = false;
@@ -2481,7 +2588,7 @@
                 lastToggledPurchaseHistoryId = null;
             }
             document.getElementById('toast').classList.remove('show');
-            if (!saved) showToast(SAVE_ERROR_MESSAGE);
+            if (!saved) showToast(SAVE_ERROR_MESSAGE, retryAction || false);
         });
 
         /**
@@ -2494,10 +2601,12 @@
         function parseQuickInput(rawText, customId = null) {
             let text = rawText.trim();
             if (!text) return null;
+            if (/^[+-]?0+(?:[.,]0+)?(?:\s|[a-zà-ú])/i.test(text) || /^-\s*\d/.test(text) || /(?:\s|(?:r\$|rs|\$)\s*)-\s*\d+(?:[.,]\d+)?\s*(?:reais|real)?\s*$/i.test(text)) return null;
 
             let quantity = 1;
             let unit = 'un';
             let price = 0;
+            let priceBasis = 'unit';
             const notes = [];
 
             // `promoRegex` detecta a condição mesmo quando a palavra não está no fim; `trailingPromo` também a remove do nome.
@@ -2520,16 +2629,29 @@
             }
 
             // Primeiro tenta preço ligado a promoção; `priceMatch` cobre as formas gerais no fim do trecho.
+            const totalPriceMatch = text.match(/\s+d[áa]\s+(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$)?\s*$/i);
+            const perKgPriceMatch = text.match(/\s+(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?|r\$|rs|\$)?\s*(?:\/|por\s+)(?:kg|quilos?|kilos?|quilogramas?)\s*$/i);
             const promoPriceMatch = text.match(/(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\s*(?:de|por|a)?\s*(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)?\s*$/i);
-            if (promoPriceMatch) {
+            if (perKgPriceMatch) {
+                price = parseFloat(perKgPriceMatch[1].replace(',', '.'));
+                priceBasis = 'kg';
+                text = text.substring(0, text.length - perKgPriceMatch[0].length).trim();
+            } else if (totalPriceMatch) {
+                price = parseFloat(totalPriceMatch[1].replace(',', '.'));
+                priceBasis = 'total';
+                text = text.substring(0, text.length - totalPriceMatch[0].length).trim();
+            } else if (promoPriceMatch) {
                 price = parseFloat(promoPriceMatch[1].replace(',', '.'));
                 text = text.substring(0, text.length - promoPriceMatch[0].length).trim();
                 text = text.replace(/[-–—,:]$/, '').trim();
             } else {
                 const priceMatch = text.match(/(?:(?:r\$|rs|\$)\s*(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)|\b(?:por|a|de)\s+(\d+(?:[.,]\d{1,2})?)|(\d+[.,]\d{2})|\s+(\d+(?:[.,]\d{1,2})?))\s*$/i);
-                if (priceMatch && (!priceMatch[5] || /[^\d\s]/.test(text.slice(0, priceMatch.index)))) {
+                // Números de modelos e descrições não são preços sem indicação explícita de moeda.
+                const numericDescription = /\b(?:rtx|gtx|iphone|galaxy)\s+\d+\s*$/i.test(text) || /\btipo\s+\d+\s*$/i.test(text) || /\b\d+\s+em\s+\d+\s*$/i.test(text);
+                if (priceMatch && !numericDescription && (!priceMatch[5] || /[^\d\s]/.test(text.slice(0, priceMatch.index)))) {
                     const valStr = priceMatch[1] || priceMatch[2] || priceMatch[3] || priceMatch[4] || priceMatch[5];
                     price = parseFloat(valStr.replace(',', '.'));
+                    if (/^\d+(?:[.,]\d+)?\s*\D/.test(text) && /\d\s+reais?\s*$/i.test(text)) priceBasis = 'total';
                     text = text.substring(0, text.length - priceMatch[0].length).trim();
                     text = text.replace(/[-–—,:]$/, '').trim();
                 }
@@ -2580,14 +2702,24 @@
             text = text.replace(/[-–—,:]$/, '').trim();
 
             // Quantidade e unidade ficam antes do nome; `x` significa contagem e mantém unidade padrão `un`.
-            const prefixMatch = text.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|un|pct|lt|cx|x)?\s+(.+)$/i);
+            const prefixMatch = text.match(/^(\d+(?:[.,]\d+)?)\s*(?:(quilogramas?|kilogramas?|quilos?|kilos?|kg|gramas?|gms?|grs?|g|unidades?|un|pacotes?|pct|litros?|lt|l|mililitros?|ml|caixas?|cx|dúzias?|duzias?|dz|x)\s+|\s+)(\D.*)$/i);
             if (prefixMatch) {
                 quantity = parseFloat(prefixMatch[1].replace(',', '.'));
                 if (prefixMatch[2] && prefixMatch[2].toLowerCase() !== 'x') {
-                    unit = prefixMatch[2].toLowerCase();
+                    const aliases = { quilo:'kg', quilos:'kg', kilo:'kg', kilos:'kg', quilograma:'kg', quilogramas:'kg', kilograma:'kg', kilogramas:'kg', grama:'g', gramas:'g', gm:'g', gms:'g', gr:'g', grs:'g', unidade:'un', unidades:'un', pacote:'pct', pacotes:'pct', litro:'lt', litros:'lt', l:'lt', mililitro:'ml', mililitros:'ml', caixa:'cx', caixas:'cx', dúzia:'dz', dúzias:'dz', duzia:'dz', duzias:'dz' };
+                    const parsedUnit = prefixMatch[2].toLowerCase();
+                    unit = aliases[parsedUnit] || parsedUnit;
                 }
                 text = prefixMatch[3].trim();
+                if (prefixMatch[2] && /^(?:de|do|da|dos|das)\s+\S/i.test(text)) text = text.replace(/^(?:de|do|da|dos|das)\s+/i, '');
+            } else {
+                const suffixUnits = text.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s+unidades?$/i);
+                if (suffixUnits) {
+                    text = suffixUnits[1].trim();
+                    quantity = parseFloat(suffixUnits[2].replace(',', '.'));
+                }
             }
+            if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(price) || price < 0 || (priceBasis === 'kg' && !['kg', 'g'].includes(unit))) return null;
 
             // A categoria é escolhida pelo nome já limpo; `norm` normaliza acentos/plural só para comparar regras.
             const capitalizedName = text.charAt(0).toUpperCase() + text.slice(1);
@@ -2603,13 +2735,13 @@
                 category = 'Limpeza';
             } else if (/pao|bolo|torta|biscoito|bolacha|torrada|croissant|baguete|rosquinha|donut|sonho|pastel|coxinha|salgado/.test(norm)) {
                 category = 'Padaria';
-            } else if (/sorvete|picole|acai|hamburguer|nugget|empanado|\bpizza\b|\bgelo\b|lasanha|congelad/.test(norm)) {
+            } else if (/batata\s+frita|sorvete|picole|acai|hamburguer|nugget|empanado|\bpizza\b|\bgelo\b|lasanha|congelad/.test(norm)) {
                 category = 'Congelados';
             } else if (/suco|nectar|polpa|cerveja|chopp|vinho|whisky|uisque|vodka|cachaca|gin|gim|rum|refrigerante|coca|guarana|fanta|sprite|pepsi|energetico|red bull|monster|espumante|champanhe|prosecco|\bcha\b|\bcafe\b|\bagua\b/.test(norm)) {
                 category = 'Bebidas';
             } else if (/molho|extrato|ketchup|mostarda|maionese|barbecue|doce de leite|leite condensado|macarrao|espaguete|miojo|penne|parafuso|arroz|feijao|doritos|ruffles|cheetos|fandangos|batata palha|pipoca|chocolate|bombom|bala|chiclete/.test(norm)) {
                 category = 'Mercearia';
-            } else if (/\bleite\b|queijo|iogurte|manteiga|requeijao|nata|creme de leite|condensado|margarina|mussarela|mucarela|parmesao|cheddar|provolone|ricota|danone|yakult/.test(norm)) {
+            } else if (/\bovos?\b|\bleite\b|queijo|iogurte|manteiga|requeijao|nata|creme de leite|condensado|margarina|mussarela|mucarela|parmesao|cheddar|provolone|ricota|danone|yakult/.test(norm)) {
                 category = 'Laticínios';
             } else if (/carne|frango|peixe|linguica|salsicha|alcatra|bife|costela|moida|bacon|picanha|contrafile|patinho|maminha|fraldinha|file|acem|cupim|sobrecoxa|peito de frango|asa|salmao|tilapia|bacalhau|atum|sardinha|camarao|polvo|lula|calabresa|presunto|mortadela|salame|copa/.test(norm)) {
                 category = 'Açougue';
@@ -2628,6 +2760,7 @@
                 quantity: quantity || 1,
                 unit: unit || 'un',
                 price: price || 0,
+                priceBasis: priceBasis,
                 category: category,
                 note: finalNote || '',
                 purchased: false
@@ -2704,19 +2837,23 @@
                 }
             });
 
-            if (newItems.length === 0) return;
+            if (newItems.length !== chunks.length) {
+                showToast('Confira a quantidade e o preço dos produtos.');
+                return;
+            }
 
-            newItems.forEach((item, index) => {
-                appData.registrationHistory.push({ name: item.name, category: item.category, purchasedAt: Date.now() });
-                const explicitUnit = /^\s*\d+(?:[.,]\d+)?\s*(kg|g|un|pct|lt|cx)\s+/i.test(chunks[index]);
+            newItems.forEach(item => {
+                appData.registrationHistory.push({ name: item.name, category: item.category, note: item.note || '', unit: item.unit || 'un', quantity: item.quantity, purchasedAt: Date.now() });
                 const existing = appData.items.find(existingItem =>
                     existingItem.listId === appData.activeListId && !existingItem.purchased &&
                     normalizeProductNameForMatching(existingItem.name) === normalizeProductNameForMatching(item.name) &&
-                    (!explicitUnit || (existingItem.unit || 'un') === item.unit)
+                    normalizeText(existingItem.note || '') === normalizeText(item.note || '') &&
+                    (existingItem.unit || 'un') === item.unit &&
+                    (!existingItem.price || !item.price || existingItem.price === item.price) &&
+                    existingItem.priceBasis !== 'total' && item.priceBasis !== 'total' && !(existingItem.priceBasis === 'kg' && item.price)
                 );
                 if (existing) {
                     existing.quantity = Math.round(((existing.quantity || 1) + item.quantity) * 1000) / 1000;
-                    if (item.note) existing.note = [existing.note, item.note].filter(Boolean).join(' • ');
                     if (item.price) existing.price = item.price;
                 } else {
                     appData.items.unshift(item);
@@ -2845,6 +2982,7 @@
             document.getElementById('stepper-val').value = currentEditingQuantity;
             document.getElementById('edit-unit').value = item.unit || 'un';
             document.getElementById('edit-price').value = item.price && item.price > 0 ? item.price : '';
+            document.getElementById('edit-price-label').textContent = item.priceBasis === 'kg' ? 'Preço por kg (R$)' : item.priceBasis === 'total' ? 'Preço total (R$)' : 'Preço por unidade informada (R$)';
             document.getElementById('edit-category').value = item.category || 'Mercearia';
             document.getElementById('edit-note').value = item.note || '';
 
@@ -2915,14 +3053,21 @@
             const inputQty = parseFloat(document.getElementById('stepper-val').value);
             const priceInput = document.getElementById('edit-price').value.trim();
             const priceVal = priceInput === '' ? 0 : Number(priceInput);
-            if (!Number.isFinite(priceVal) || priceVal < 0 || (Number.isFinite(inputQty) && inputQty <= 0) || inputQty === Infinity) {
+            const priceBasis = priceInput === '' ? 'unit' : (item.priceBasis || 'unit');
+            const unit = document.getElementById('edit-unit').value;
+            if (!Number.isFinite(priceVal) || priceVal < 0 || !Number.isFinite(inputQty) || inputQty <= 0) {
                 alert('Informe uma quantidade maior que zero e um preço válido, sem valor negativo.');
+                return;
+            }
+            if (priceBasis === 'kg' && !['kg', 'g'].includes(unit)) {
+                alert('Este preço é por quilo. Mantenha a unidade kg ou g, ou apague o preço para trocar a unidade.');
                 return;
             }
             item.quantity = (!isNaN(inputQty) && inputQty > 0) ? inputQty : (currentEditingQuantity || 1);
             item.name = name;
-            item.unit = document.getElementById('edit-unit').value;
+            item.unit = unit;
             item.price = priceVal;
+            item.priceBasis = priceBasis;
             item.category = document.getElementById('edit-category').value;
             item.note = document.getElementById('edit-note').value.trim();
 
@@ -3017,10 +3162,10 @@
                 div.className = `list-selector-item ${list.id === appData.activeListId ? 'active' : ''}`;
                 const details = document.createElement('div');
                 const name = document.createElement('div');
-                name.style.fontSize = '15px';
+                name.style.fontSize = '16px';
                 name.textContent = list.name;
                 const pendingCount = document.createElement('div');
-                pendingCount.style.fontSize = '12px';
+                pendingCount.style.fontSize = '14px';
                 pendingCount.style.color = 'var(--text-secondary)';
                 pendingCount.textContent = `${count} itens pendentes`;
                 details.append(name, pendingCount);
@@ -3128,7 +3273,7 @@
 
             let pendingTotal = 0;
             pending.forEach(i => {
-                if (i.price && i.quantity) pendingTotal += (i.price * i.quantity);
+                if (i.price && i.quantity) pendingTotal += itemSubtotal(i);
             });
 
             let text = `🛒 *${activeList.name}*\n\n`;
@@ -3146,7 +3291,7 @@
 
                     text += `${category.icon} *${category.name}*\n`;
                     categoryItems.forEach(i => {
-                        const priceStr = i.price > 0 ? ` · ${formatMoney(i.price * i.quantity)}` : '';
+                        const priceStr = i.price > 0 ? ` · ${formatMoney(itemSubtotal(i))}` : '';
                         text += `☐ ${i.name} · ${i.quantity} ${i.unit}${priceStr}\n`;
                     });
                     text += '\n';
@@ -3245,6 +3390,44 @@
             }, { passive: false });
         }
 
+        // Apresenta os gestos principais sem modificar listas ou histórico.
+        const tutorial = document.getElementById('tutorial');
+        const tutorialSteps = [
+            ['🛒', 'Monte sua lista', 'Digite um produto na barra e toque no botão + para adicionar.'],
+            ['✅', 'Marque suas compras', 'Toque em um produto para marcá-lo como comprado.'],
+            ['✏️', 'Edite um produto', 'Segure o cartão do produto para alterar quantidade, preço ou observação.'],
+            ['↔️', 'Remova quando precisar', 'Arraste o produto para o lado para excluir. Depois, você pode tocar em Desfazer.']
+        ];
+        let tutorialStep = 0;
+        const tutorialNext = document.getElementById('tutorial-next');
+        const tutorialSkip = document.getElementById('tutorial-skip');
+        function showTutorialStep() {
+            const [icon, title, description] = tutorialSteps[tutorialStep];
+            document.getElementById('tutorial-icon').textContent = icon;
+            document.getElementById('tutorial-title').textContent = title;
+            document.getElementById('tutorial-description').textContent = description;
+            document.getElementById('tutorial-progress').textContent = `${tutorialStep + 1} de ${tutorialSteps.length}`;
+            tutorialNext.textContent = tutorialStep === tutorialSteps.length - 1 ? 'Começar' : 'Próximo';
+        }
+        function finishTutorial() {
+            tutorial.classList.remove('active');
+            try { localStorage.setItem('lista_compras_tutorial_v1', 'concluido'); }
+            catch (e) { console.warn('Não foi possível guardar a conclusão do tutorial.'); }
+            document.getElementById('btn-quick-add').focus({ preventScroll: true });
+        }
+        tutorialNext.addEventListener('click', () => {
+            if (tutorialStep === tutorialSteps.length - 1) finishTutorial();
+            else { tutorialStep++; showTutorialStep(); }
+        });
+        tutorialSkip.addEventListener('click', finishTutorial);
+        tutorial.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); finishTutorial(); }
+            if (e.key === 'Tab') {
+                if (e.shiftKey && document.activeElement === tutorialSkip) { e.preventDefault(); tutorialNext.focus(); }
+                else if (!e.shiftKey && document.activeElement === tutorialNext) { e.preventDefault(); tutorialSkip.focus(); }
+            }
+        });
+
         // Inicialização em ordem: preferências e dados primeiro, depois interface e gestos dependentes do DOM.
         initTheme();
         loadData();
@@ -3253,6 +3436,15 @@
         renderQuickChips();
         makeDraggable(document.getElementById('category-filter-chips'));
         makeDraggable(document.getElementById('quick-chips'));
+        try {
+            if (localStorage.getItem('lista_compras_tutorial_v1') !== 'concluido') {
+                showTutorialStep();
+                tutorial.classList.add('active');
+                tutorialNext.focus({ preventScroll: true });
+            }
+        } catch (e) {
+            console.warn('Não foi possível carregar a preferência do tutorial.');
+        }
     </script>
 </body>
 </html>
