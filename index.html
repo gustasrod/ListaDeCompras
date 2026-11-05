@@ -98,11 +98,19 @@
             font-family: var(--font-family);
             font-size: 16px;
             line-height: 1.4;
+            -webkit-user-select: none;
+            user-select: none;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px 10px;
+        }
+
+        /* Preserva seleção, correção e cópia onde há texto editável ou compartilhável. */
+        input, textarea, [contenteditable="true"], .share-preview {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         /* Moldura do celular: também é o contêiner de posição para folhas, alertas e lixeira. */
@@ -311,8 +319,9 @@
         /* Área rolável que recebe os grupos de itens pendentes, comprados e estado vazio. */
         .app-content {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
-            padding: 12px 14px 140px;
+            padding: 12px 14px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -560,12 +569,10 @@
             max-width: 250px;
         }
 
-        /* Faixa fixa inferior: recomendações, campo de cadastro e aviso temporário. */
+        /* Reserva espaço abaixo da lista para não encobrir os cartões ao abrir o teclado. */
         .quick-add-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            position: relative;
+            flex-shrink: 0;
             background-color: var(--surface);
             border-top: 1px solid var(--border);
             padding: 10px 14px 16px;
@@ -800,6 +807,9 @@
             background-color: var(--primary-dark);
         }
 
+        #add-modal { align-items: flex-start; padding: 12px; }
+        .add-dialog { width: 100%; background: var(--surface); border-radius: 18px; padding: 20px; max-height: 100%; overflow-y: auto; }
+        .add-dialog h2 { font-size: 20px; margin-bottom: 14px; }
         /* Camada comum de modais; folhas inferiores servem para editar itens e gerenciar listas. */
         .modal-overlay {
             position: absolute;
@@ -1172,7 +1182,6 @@
         .section-header, .empty-placeholder p { font-size: 15px; }
         .quick-input, .quick-input::placeholder { font-size: 16px; }
         .quick-input { min-width: 0; min-height: 48px; }
-        .app-content { padding-bottom: 170px; }
         .form-label, .dialog-desc { font-size: 15px; }
         .form-input, .form-select, .stepper-input { font-size: 16px; }
         .form-input, .form-select, .stepper-btn { min-height: 48px; }
@@ -1205,6 +1214,16 @@
                 box-shadow: none;
             }
         }
+
+        /* Com pouco espaço durante a digitação, prioriza a lista sem esconder o anúncio. */
+        @media (max-width: 480px) and (max-height: 520px) {
+            .phone-frame:has(#quick-input:focus) .app-title-group > span,
+            .phone-frame:has(#quick-input:focus) .totals-bar,
+            .phone-frame:has(#quick-input:focus) .filter-chips-bar { display: none; }
+            .phone-frame:has(#quick-input:focus) .suggestion-chips { display: none !important; }
+            .phone-frame:has(#quick-input:focus) .app-header { padding-top: 4px; padding-bottom: 4px; }
+            .phone-frame:has(#quick-input:focus) .quick-add-container { padding-top: 6px; padding-bottom: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -1212,7 +1231,7 @@
     <div class="phone-frame" id="app">
         <aside class="ad-area" aria-label="Espaço para anúncio">Espaço para anúncio</aside>
 
-        <!-- Cabeçalho com lista ativa e ações de tema, compartilhamento e limpeza de comprados. -->
+        <!-- Cabeçalho com lista ativa e compartilhamento. -->
         <header class="app-header">
             <div class="header-left" id="btn-select-list" title="Trocar de Lista">
                 <div class="app-title-group">
@@ -1227,18 +1246,11 @@
             </div>
 
             <div class="header-actions">
-                <button class="btn-icon" id="btn-theme-toggle" title="Alternar Modo Escuro">
-                    <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
+                <button class="btn-icon" id="btn-quick-add" type="button" title="Adicionar produto" aria-label="Adicionar produto">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+                </button>
+                <button class="btn-icon" type="button" title="Microfone indisponível" aria-label="Microfone indisponível" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"></path></svg>
                 </button>
                 <button class="btn-icon" id="btn-share" title="Compartilhar Lista">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1247,12 +1259,6 @@
                         <circle cx="18" cy="19" r="3"></circle>
                         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
-                </button>
-                <button class="btn-icon" id="btn-clear-purchased" title="Limpar itens já comprados">
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
                 </button>
             </div>
@@ -1295,28 +1301,22 @@
         <div class="quick-add-container">
             <div class="suggestion-chips" id="quick-chips"></div>
 
-            <div class="input-row">
-                <input 
-                    type="text" 
-                    id="quick-input" aria-label="Adicionar produto" 
-                    class="quick-input" 
-                    placeholder="Adicionar item (ex: 2 Leite, 1kg Banana, Café 16,90)..." 
-                    autocomplete="off"
-                    enterkeyhint="done"
-                >
-                <button class="btn-add" id="btn-quick-add" title="Adicionar">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </button>
-            </div>
             <div class="toast-snack" id="toast">
                 <span id="toast-msg">Item comprado</span>
                 <button class="toast-undo" id="btn-undo">Desfazer</button>
             </div>
         </div>
 
+        <div class="modal-overlay" id="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-title">
+            <div class="add-dialog">
+                <h2 id="add-title">Adicionar produto</h2>
+                <input type="text" id="quick-input" aria-label="Adicionar produto" class="form-input" placeholder="Ex: 2 Leite, 1kg Banana" autocomplete="off" enterkeyhint="done">
+                <div class="sheet-actions">
+                    <button type="button" class="btn-secondary" id="cancel-add">Cancelar</button>
+                    <button type="button" class="btn-primary" id="confirm-add">Adicionar</button>
+                </div>
+            </div>
+        </div>
         <!-- Apresentação opcional mostrada até ser concluída ou pulada neste navegador. -->
         <div class="modal-overlay tutorial-overlay" id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" aria-describedby="tutorial-description">
             <div class="tutorial-card">
@@ -1830,7 +1830,7 @@
             }
         }
 
-        /** Lê a preferência de tema, aplica o padrão claro se faltar e sincroniza o ícone do cabeçalho. */
+        /** Lê a preferência de tema e aplica o padrão claro se faltar. */
         function initTheme() {
             let savedTheme = 'light';
             try {
@@ -1840,31 +1840,6 @@
                 showToast('Não foi possível carregar o tema salvo.');
             }
             document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon(savedTheme);
-        }
-
-        /** Troca apenas o desenho interno do botão para representar o tema que está ativo. */
-        function updateThemeIcon(theme) {
-            const icon = document.getElementById('theme-icon');
-            if (theme === 'dark') {
-                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-            } else {
-                icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-            }
-        }
-
-        /** Alterna tema na página, tenta persistir a preferência e atualiza o ícone. */
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            try {
-                localStorage.setItem(THEME_KEY, next);
-            } catch (e) {
-                console.error('Erro ao salvar o tema no navegador:', e);
-                showToast('O tema foi alterado, mas não pôde ser salvo.');
-            }
-            updateThemeIcon(next);
         }
 
         /** Retorna a lista marcada como ativa; usa a primeira como alternativa se o estado estiver incompleto. */
@@ -2872,8 +2847,11 @@
             renderList();
             renderQuickChips();
 
-            if (saved) input.value = '';
-            input.focus();
+            if (saved) {
+                input.value = '';
+                input.blur();
+                document.getElementById('add-modal').classList.remove('active');
+            }
 
             const container = document.getElementById('list-container');
             container.scrollTop = 0;
@@ -2895,30 +2873,19 @@
         });
 
         document.getElementById('btn-quick-add').addEventListener('click', () => {
-            addItemFromQuickInput();
+            document.getElementById('add-modal').classList.add('active');
+            quickInput.focus();
+        });
+        document.getElementById('confirm-add').addEventListener('click', addItemFromQuickInput);
+        document.getElementById('cancel-add').addEventListener('click', () => {
+            quickInput.blur();
+            document.getElementById('add-modal').classList.remove('active');
         });
 
         // Recolhe/expande apenas a apresentação dos comprados; os registros permanecem na lista.
         document.getElementById('toggle-purchased-btn').addEventListener('click', () => {
             purchasedCollapsed = !purchasedCollapsed;
             renderList();
-        });
-
-        // Limpa comprados da lista atual somente após confirmação explícita do navegador.
-        document.getElementById('btn-clear-purchased').addEventListener('click', () => {
-            const purchasedCount = appData.items.filter(i => i.listId === appData.activeListId && i.purchased).length;
-            if (purchasedCount === 0) {
-                showToast('Nenhum item comprado para limpar');
-                return;
-            }
-            if (confirm(`Deseja remover os ${purchasedCount} itens já comprados desta lista?`)) {
-                appData.items = appData.items.filter(i => !(i.listId === appData.activeListId && i.purchased));
-                const saved = saveData();
-                renderFilterChips();
-                renderList();
-                renderQuickChips();
-                showToast(saved ? 'Itens comprados removidos' : SAVE_ERROR_MESSAGE);
-            }
         });
 
         // Valor de segurança da quantidade em edição quando o campo estiver temporariamente vazio ou inválido.
@@ -3329,9 +3296,6 @@
                 showToast('Selecione e copie o texto manualmente.');
             });
         });
-
-        // O botão de tema delega para a mesma função usada durante a inicialização.
-        document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
 
         /**
          * Permite rolar horizontalmente uma faixa com mouse ou roda do mouse.
