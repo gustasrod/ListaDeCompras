@@ -204,6 +204,25 @@
             color: var(--text-primary);
         }
 
+        #btn-voice { position: relative; }
+        #btn-voice.is-listening {
+            color: #dc2626;
+            background-color: #fee2e2;
+            animation: voice-listening 1.2s ease-out infinite;
+        }
+        #btn-voice.is-success { color: #047857; background-color: #d1fae5; }
+        #btn-voice .voice-success-icon { display: none; }
+        #btn-voice.is-success .voice-mic-icon { display: none; }
+        #btn-voice.is-success .voice-success-icon { display: block; }
+        @keyframes voice-listening {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.38); }
+            70% { box-shadow: 0 0 0 9px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #btn-voice.is-listening { animation: none; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.28); }
+        }
+
         /* Resumo de pendências e valor estimado, seguido dos filtros horizontais por categoria. */
         .totals-bar {
             padding: 8px 18px;
@@ -1207,7 +1226,8 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
                 </button>
                 <button class="btn-icon" id="btn-voice" type="button" title="Adicionar por voz" aria-label="Adicionar por voz">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"></path></svg>
+                    <svg class="voice-mic-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"></path></svg>
+                    <svg class="voice-success-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
                 </button>
                 <button class="btn-icon" id="btn-share" title="Compartilhar Lista">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2834,10 +2854,10 @@
         function addItemFromQuickInput(voiceText = null) {
             const input = document.getElementById('quick-input');
             const rawVal = voiceText ?? input.value;
-            if (!rawVal || !rawVal.trim()) return;
+            if (!rawVal || !rawVal.trim()) return false;
 
             const chunks = splitMultiItemText(rawVal);
-            if (chunks.length === 0) return;
+            if (chunks.length === 0) return false;
 
             const newItems = [];
             chunks.forEach((chunk, index) => {
@@ -2851,7 +2871,7 @@
             if (newItems.length !== chunks.length) {
                 if (voiceText !== null) { input.value = [input.value.trim(), voiceText].filter(Boolean).join(', '); document.getElementById('add-modal').classList.add('active'); }
                 showToast('Confira a quantidade e o preço dos produtos.');
-                return;
+                return false;
             }
 
             newItems.forEach(item => {
@@ -2898,17 +2918,19 @@
             if (!saved) {
                 if (voiceText !== null) { input.value = [input.value.trim(), voiceText].filter(Boolean).join(', '); document.getElementById('add-modal').classList.add('active'); }
                 showToast(SAVE_ERROR_MESSAGE);
-            } else if (newItems.length > 1) {
-                showToast(`${newItems.length} itens adicionados!`);
+            } else if (voiceText !== null || newItems.length > 1) {
+                showToast(`${newItems.length} ${newItems.length === 1 ? 'produto adicionado!' : 'itens adicionados!'}`);
             }
+            return saved;
         }
 
         // Referência persistente ao campo para ligar Enter ao mesmo fluxo do botão de adicionar.
         const quickInput = document.getElementById('quick-input');
-        // A fala reconhecida é apresentada para revisão antes do cadastro.
+        // O botao indica quando escuta e confirma quando salva o cadastro.
         const voiceButton = document.getElementById('btn-voice');
         const VoiceRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let voiceRecognition = null;
+        let voiceSuccessTimeout = null;
         voiceButton.addEventListener('click', () => {
             if (!VoiceRecognition) { showToast('Reconhecimento de voz indisponível neste navegador.'); return; }
             if (voiceRecognition) { voiceRecognition.stop(); return; }
@@ -2916,13 +2938,31 @@
             voiceRecognition = recognition;
             recognition.lang = 'pt-BR';
             recognition.interimResults = false;
-            voiceButton.setAttribute('aria-label', 'Parar gravação');
-            voiceButton.title = 'Parar gravação';
+            if (voiceSuccessTimeout) window.clearTimeout(voiceSuccessTimeout);
+            voiceSuccessTimeout = null;
+            voiceButton.classList.remove('is-success');
+            voiceButton.classList.add('is-listening');
+            voiceButton.setAttribute('aria-label', 'Ouvindo. Toque para parar');
+            voiceButton.title = 'Ouvindo';
             recognition.onresult = event => {
                 const text = event.results[0][0].transcript.trim();
                 if (!text) return;
                 const voiceText = text.replace(/\s+e\s+/gi, ', ');
-                addItemFromQuickInput(voiceText);
+                const saved = addItemFromQuickInput(voiceText);
+                if (saved) {
+                    voiceButton.classList.remove('is-listening');
+                    voiceButton.classList.add('is-success');
+                    voiceButton.setAttribute('aria-label', 'Produto cadastrado');
+                    voiceButton.title = 'Produto cadastrado';
+                    voiceSuccessTimeout = window.setTimeout(() => {
+                        voiceSuccessTimeout = null;
+                        if (voiceButton.classList.contains('is-success')) {
+                            voiceButton.classList.remove('is-success');
+                            voiceButton.setAttribute('aria-label', 'Adicionar por voz');
+                            voiceButton.title = 'Adicionar por voz';
+                        }
+                    }, 1500);
+                }
                 recognition.stop();
             };
             recognition.onerror = event => {
@@ -2930,12 +2970,18 @@
                     ? 'Permita o acesso ao microfone no navegador.'
                     : event.error === 'no-speech' ? 'Nenhuma fala foi detectada. Tente novamente.'
                     : 'Não foi possível reconhecer a fala. Tente novamente.';
+                voiceButton.classList.remove('is-listening');
+                voiceButton.setAttribute('aria-label', 'Adicionar por voz');
+                voiceButton.title = 'Adicionar por voz';
                 showToast(message);
             };
             recognition.onend = () => {
                 voiceRecognition = null;
-                voiceButton.setAttribute('aria-label', 'Adicionar por voz');
-                voiceButton.title = 'Adicionar por voz';
+                voiceButton.classList.remove('is-listening');
+                if (!voiceButton.classList.contains('is-success')) {
+                    voiceButton.setAttribute('aria-label', 'Adicionar por voz');
+                    voiceButton.title = 'Adicionar por voz';
+                }
             };
             try { recognition.start(); showToast('Ouvindo... Toque no microfone para parar.'); }
             catch (error) { voiceRecognition = null; voiceButton.setAttribute('aria-label', 'Adicionar por voz'); voiceButton.title = 'Adicionar por voz'; showToast('Não foi possível iniciar o microfone.'); }
