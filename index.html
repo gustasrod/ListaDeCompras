@@ -72,9 +72,7 @@
         [data-theme="dark"] .preset-chip:hover { color: #89e9c6; }
         [data-theme="dark"] .filter-chip.active,
         [data-theme="dark"] .filter-chip.active:hover,
-        [data-theme="dark"] .btn-add,
         [data-theme="dark"] .btn-primary { background-color: #08765d; color: #fff; }
-        [data-theme="dark"] .btn-add:hover,
         [data-theme="dark"] .btn-primary:hover { background-color: #09624f; }
         [data-theme="dark"] .btn-danger { color: #ff999e; }
         [data-theme="dark"] .quick-add-container { box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2); }
@@ -751,63 +749,7 @@
             transform: rotate(-12deg);
         }
 
-        /* Campo de cadastro rápido e botão de inclusão. */
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: var(--surface-variant);
-            border: 1.5px solid var(--border);
-            border-radius: 24px;
-            padding: 4px 6px 4px 14px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .input-row:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-            background-color: var(--surface);
-        }
-
-        .quick-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 15px;
-            color: var(--text-primary);
-            outline: none;
-            font-family: inherit;
-        }
-
-        .quick-input::placeholder {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .btn-add {
-            background-color: var(--primary);
-            color: #ffffff;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background-color 0.15s, transform 0.1s;
-        }
-
-        .btn-add:active {
-            transform: scale(0.92);
-        }
-
-        .btn-add:hover {
-            background-color: var(--primary-dark);
-        }
-
-        #add-modal { align-items: flex-start; padding: 12px; }
+        #add-modal { top: var(--ad-height); align-items: flex-start; padding: 12px; }
         .add-dialog { width: 100%; background: var(--surface); border-radius: 18px; padding: 20px; max-height: 100%; overflow-y: auto; }
         .add-dialog h2 { font-size: 20px; margin-bottom: 14px; }
         /* Camada comum de modais; folhas inferiores servem para editar itens e gerenciar listas. */
@@ -830,7 +772,17 @@
         }
 
         /* Mantém o anúncio visível enquanto o gerenciador de listas está aberto. */
-        #lists-modal { top: var(--ad-height); }
+        #lists-modal, #settings-modal { top: var(--ad-height); }
+        .share-settings { border: 1px solid var(--border); border-radius: 16px; background: var(--surface-variant); overflow: hidden; }
+        .share-settings summary { min-height: 56px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text-primary); font-weight: 700; cursor: pointer; list-style: none; }
+        .share-settings summary::-webkit-details-marker { display: none; }
+        .share-settings summary::after { content: '⌄'; color: var(--text-secondary); font-size: 24px; line-height: 1; transition: transform .2s; }
+        .share-settings[open] summary::after { transform: rotate(180deg); }
+        .share-settings-content { padding: 0 16px 16px; }
+        .share-settings-content .form-group { margin-top: 16px; }
+        .share-option { display: flex; align-items: center; gap: 12px; min-height: 48px; color: var(--text-primary); font-size: 15px; cursor: pointer; }
+        .share-option input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary); }
+        #btn-open-settings { width: auto; padding: 0 8px; gap: 6px; border-radius: 12px; font-size: 14px; font-weight: 600; }
 
         /* Apresentação inicial usa a mesma paleta do aplicativo e cabe em telas pequenas. */
         .tutorial-overlay { align-items: center; padding: 20px; z-index: 70; }
@@ -1168,7 +1120,7 @@
         .app-title-group { min-width: 0; }
         .app-title-group h1 { font-size: 19px; }
         .app-title-group span { font-size: 14px; }
-        .btn-icon, .btn-add, .item-check-btn { width: 48px; height: 48px; }
+        .btn-icon, .item-check-btn { width: 48px; height: 48px; }
         .btn-icon { flex-shrink: 0; }
         .btn-icon svg { width: 24px; height: 24px; }
         .totals-bar { font-size: 16px; padding: 10px 14px; gap: 8px; }
@@ -1180,8 +1132,6 @@
         .item-name { font-size: 17px; white-space: normal; overflow-wrap: anywhere; }
         .item-meta, .item-category-tag, .item-quantity-pill, .item-price-val { font-size: 14px; }
         .section-header, .empty-placeholder p { font-size: 15px; }
-        .quick-input, .quick-input::placeholder { font-size: 16px; }
-        .quick-input { min-width: 0; min-height: 48px; }
         .form-label, .dialog-desc { font-size: 15px; }
         .form-input, .form-select, .stepper-input { font-size: 16px; }
         .form-input, .form-select, .stepper-btn { min-height: 48px; }
@@ -1215,15 +1165,20 @@
             }
         }
 
-        /* Com pouco espaço durante a digitação, prioriza a lista sem esconder o anúncio. */
-        @media (max-width: 480px) and (max-height: 520px) {
-            .phone-frame:has(#quick-input:focus) .app-title-group > span,
-            .phone-frame:has(#quick-input:focus) .totals-bar,
-            .phone-frame:has(#quick-input:focus) .filter-chips-bar { display: none; }
-            .phone-frame:has(#quick-input:focus) .suggestion-chips { display: none !important; }
-            .phone-frame:has(#quick-input:focus) .app-header { padding-top: 4px; padding-bottom: 4px; }
-            .phone-frame:has(#quick-input:focus) .quick-add-container { padding-top: 6px; padding-bottom: 8px; }
+        /* Mantém o fundo na mesma posição enquanto a janela de cadastro está aberta. */
+        .phone-frame:has(#add-modal.active) { height: var(--altura-antes-do-teclado); }
+        /* Tema neutro inspirado no YouTube, mantendo os destaques verdes do aplicativo. */
+        [data-theme="dark"] {
+            --surface: #212121;
+            --surface-variant: #181818;
+            --surface-hover: #303030;
+            --text-primary: #f1f1f1;
+            --text-secondary: #b5b5b5;
+            --text-muted: #aaaaaa;
+            --border: #444444;
         }
+        [data-theme="dark"] .app-content { background: #0f0f0f; }
+        [data-theme="dark"] .item-card.purchased { background: #23332d; border-color: #40594d; }
     </style>
 </head>
 <body>
@@ -1249,7 +1204,7 @@
                 <button class="btn-icon" id="btn-quick-add" type="button" title="Adicionar produto" aria-label="Adicionar produto">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
                 </button>
-                <button class="btn-icon" type="button" title="Microfone indisponível" aria-label="Microfone indisponível" disabled>
+                <button class="btn-icon" id="btn-voice" type="button" title="Adicionar por voz" aria-label="Adicionar por voz">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"></path></svg>
                 </button>
                 <button class="btn-icon" id="btn-share" title="Compartilhar Lista">
@@ -1267,7 +1222,7 @@
         <!-- Resumo calculado pelo JavaScript e filtros de categoria recriados conforme os itens. -->
         <div class="totals-bar">
             <span class="totals-count" id="totals-count-text">0 itens pendentes</span>
-            <span class="totals-price" id="totals-price-val">Total: R$ 0,00</span>
+            <span class="totals-price" id="totals-price-val" hidden>Total: R$ 0,00</span>
         </div>
 
         <div class="filter-chips-bar" id="category-filter-chips"></div>
@@ -1293,11 +1248,11 @@
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
                 <h3>Lista Vazia</h3>
-                <p>Digite um produto abaixo para começar a sua lista de compras.</p>
+                <p>Toque no + no topo para adicionar um produto à sua lista.</p>
             </div>
         </main>
 
-        <!-- Cadastro rápido: recomendações aparecem acima do campo; o aviso pode oferecer desfazer. -->
+        <!-- Recomendações no rodapé; o aviso pode oferecer desfazer. O cadastro abre pelo + no cabeçalho. -->
         <div class="quick-add-container">
             <div class="suggestion-chips" id="quick-chips"></div>
 
@@ -1332,7 +1287,7 @@
         </div>
 
         <!-- Formulário de edição; os IDs dos campos são lidos e atualizados pelas funções de edição. -->
-        <div class="modal-overlay" id="edit-modal">
+        <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-label="Editar Produto">
             <div class="bottom-sheet">
                 <div class="sheet-handle"></div>
                 <div class="sheet-header">
@@ -1416,16 +1371,14 @@
         </div>
 
         <!-- Gerenciador de listas; cada cartão é criado em lists-container e aceita seleção ou arraste. -->
-        <div class="modal-overlay" id="lists-modal">
+        <div class="modal-overlay" id="lists-modal" role="dialog" aria-modal="true" aria-label="Minhas Listas">
             <div class="bottom-sheet">
                 <div class="sheet-handle"></div>
                 <div class="sheet-header">
                     <h2 class="sheet-title">Minhas Listas</h2>
-                    <button class="btn-icon" id="btn-close-lists" aria-label="Fechar listas">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
+                    <button class="btn-icon" id="btn-open-settings" type="button" aria-label="Abrir configurações" title="Configurações">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2h2l.5 2.2a8 8 0 0 1 1.7.7l1.9-1.2 1.4 1.4-1.2 1.9a8 8 0 0 1 .7 1.7L21 9.5v2l-2.2.5a8 8 0 0 1-.7 1.7l1.2 1.9-1.4 1.4-1.9-1.2a8 8 0 0 1-1.7.7L14 19h-2l-.5-2.2a8 8 0 0 1-1.7-.7l-1.9 1.2-1.4-1.4 1.2-1.9a8 8 0 0 1-.7-1.7L5 11.5v-2L7.2 9a8 8 0 0 1 .7-1.7L6.7 5.4l1.4-1.4L10 5.2a8 8 0 0 1 1.7-.7z"></path><circle cx="13" cy="10.5" r="3"></circle></svg>
+                        <span>Configurações</span>
                     </button>
                 </div>
 
@@ -1438,6 +1391,44 @@
                         <button class="btn-primary" id="btn-create-list" style="flex: none; padding: 0 18px;">Criar</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <div class="bottom-sheet">
+                <div class="sheet-handle"></div>
+                <div class="sheet-header">
+                    <h2 class="sheet-title" id="settings-title">Configurações</h2>
+                    <button class="btn-icon" id="btn-close-settings" type="button" aria-label="Voltar para listas">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                                <div class="form-group">
+                    <label class="form-label" for="theme-select">Tema</label>
+                    <select class="form-select" id="theme-select">
+                        <option value="light">Claro</option>
+                        <option value="dark">Escuro</option>
+
+                    </select>
+                </div>
+                <details class="share-settings">
+                <summary>Lista compartilhada</summary>
+                <div class="share-settings-content">
+                <label class="share-option"><input type="checkbox" id="share-hide-list"> Remover nome da lista</label>
+                <label class="share-option"><input type="checkbox" id="share-hide-categories"> Remover nome das categorias</label>
+                <label class="share-option"><input type="checkbox" id="share-hide-category-icons"> Remover ícones das categorias</label>
+                <div class="form-group"><label class="form-label" for="share-quantity-position">Lugar da quantidade</label>
+                    <select class="form-select" id="share-quantity-position"><option value="after">Depois do nome</option><option value="before">Antes do nome</option></select>
+                </div>
+                <div class="form-group"><label class="form-label" for="share-unit-position">Lugar da unidade</label>
+                    <select class="form-select" id="share-unit-position"><option value="after">Depois do nome</option><option value="before">Antes do nome</option></select>
+                </div>
+                <div class="form-group"><label class="form-label" for="share-unit-format">Nome das unidades</label>
+                    <select class="form-select" id="share-unit-format"><option value="short">Abreviado</option><option value="full">Completo</option></select>
+                </div>
+                <label class="share-option"><input type="checkbox" id="share-bold"> Destacar quantidades e unidades em negrito</label>
+                </div>
+                </details>
             </div>
         </div>
 
@@ -1454,7 +1445,7 @@
         </div>
 
         <!-- Prévia do texto de compartilhamento; inclui apenas pendências separadas por categoria. -->
-        <div class="modal-overlay" id="share-modal">
+        <div class="modal-overlay" id="share-modal" role="dialog" aria-modal="true" aria-label="Compartilhar Lista">
             <div class="dialog-box">
                 <h3 class="dialog-title">Compartilhar Lista</h3>
                 <p class="dialog-desc">Copie o texto pronto para enviar no WhatsApp ou Telegram:</p>
@@ -1762,7 +1753,8 @@
 
         /**
          * Lê e valida a estrutura salva antes de usá-la.
-         * `saved`, `parsed` e `validData` separam leitura, conversão JSON e validação; `changed` marca correções aplicadas.
+         * `saved`, `parsed` e `validData` separam leitura, conversão JSON e validação.
+         * IDs únicos evitam que excluir um registro também remova outro com o mesmo identificador.
          * Se os dados forem inválidos, mantém o conteúdo salvo intacto e impede que uma gravação posterior o sobrescreva.
          */
         function loadData() {
@@ -1773,15 +1765,18 @@
                     const validData = parsed &&
                         Array.isArray(parsed.lists) &&
                         parsed.lists.length > 0 &&
-                        parsed.lists.every(list => list && list.id != null && typeof list.name === 'string') &&
+                        parsed.lists.every(list => list && typeof list.id === 'string' && list.id && typeof list.name === 'string') &&
+                        new Set(parsed.lists.map(list => list.id)).size === parsed.lists.length &&
                         parsed.lists.some(list => list.id === parsed.activeListId) &&
                         Array.isArray(parsed.items) &&
-                        parsed.items.every(item => item && item.id != null && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId) &&
-                            (item.quantity == null || (Number.isFinite(item.quantity) && item.quantity > 0)) &&
+                        parsed.items.every(item => item && typeof item.id === 'string' && item.id && typeof item.name === 'string' && parsed.lists.some(list => list.id === item.listId) &&
+                            Number.isFinite(item.quantity) && item.quantity > 0 &&
                             (item.price == null || (Number.isFinite(item.price) && item.price >= 0)) &&
                             (item.priceBasis == null || ['unit', 'kg', 'total'].includes(item.priceBasis)) &&
+                            (item.priceBasis !== 'kg' || ['kg', 'g'].includes(item.unit)) &&
                             ['unit', 'category', 'note'].every(field => item[field] == null || typeof item[field] === 'string') &&
                             (item.purchased == null || typeof item.purchased === 'boolean')) &&
+                        new Set(parsed.items.map(item => item.id)).size === parsed.items.length &&
                         (parsed.purchaseHistory == null || (Array.isArray(parsed.purchaseHistory) && parsed.purchaseHistory.every(entry =>
                             entry && entry.id != null && entry.itemId != null && typeof entry.name === 'string' &&
                             (entry.category == null || typeof entry.category === 'string') && (entry.note == null || typeof entry.note === 'string') && (entry.unit == null || typeof entry.unit === 'string') && (entry.quantity == null || (Number.isFinite(entry.quantity) && entry.quantity > 0)) && Number.isFinite(entry.purchasedAt)
@@ -1839,7 +1834,10 @@
                 console.warn('Erro ao carregar o tema salvo:', e);
                 showToast('Não foi possível carregar o tema salvo.');
             }
+            if (savedTheme === 'youtube') savedTheme = 'dark';
+            if (!['light', 'dark'].includes(savedTheme)) savedTheme = 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('theme-select').value = savedTheme;
         }
 
         /** Retorna a lista marcada como ativa; usa a primeira como alternativa se o estado estiver incompleto. */
@@ -1917,11 +1915,25 @@
             const trashTarget = document.getElementById('recommendation-trash-target');
 
             const defaultSuggestions = [
-                { name: 'Arroz Integral', category: 'Mercearia' },
+                { name: 'Café Torrado', category: 'Mercearia' },
+                { name: 'Arroz', category: 'Mercearia' },
                 { name: 'Feijão Carioca', category: 'Mercearia' },
-                { name: 'Leite Desnatado', category: 'Laticínios' },
-                { name: 'Banana Prata', category: 'Hortifrúti' },
-                { name: 'Café Torrado', category: 'Mercearia' }
+                { name: 'Pão Francês', category: 'Padaria' },
+                { name: 'Leite Integral', category: 'Laticínios' },
+                { name: 'Óleo de Soja', category: 'Mercearia' },
+                { name: 'Carne Bovina', category: 'Açougue' },
+                { name: 'Frango', category: 'Açougue' },
+                { name: 'Macarrão', category: 'Mercearia' },
+                { name: 'Açúcar', category: 'Mercearia' },
+                { name: 'Biscoito', category: 'Mercearia' },
+                { name: 'Ovos', category: 'Laticínios' },
+                { name: 'Banana', category: 'Hortifrúti' },
+                { name: 'Água Mineral', category: 'Bebidas' },
+                { name: 'Refrigerante', category: 'Bebidas' },
+                { name: 'Cerveja', category: 'Bebidas' },
+                { name: 'Detergente Líquido', category: 'Limpeza' },
+                { name: 'Sabão em Pó', category: 'Limpeza' },
+                { name: 'Papel Higiênico', category: 'Higiene' }
             ];
 
             // Mapa dos itens ainda não comprados para que tocar uma recomendação existente some 1 unidade.
@@ -2166,6 +2178,7 @@
 
             const pendingItems = displayItems.filter(i => !i.purchased);
             const purchasedItems = displayItems.filter(i => i.purchased);
+            document.getElementById('totals-price-val').hidden = !displayItems.some(item => item.price > 0);
 
             const pendingGroup = document.getElementById('pending-items-group');
             const purchasedGroup = document.getElementById('purchased-items-group');
@@ -2203,7 +2216,7 @@
             if (allItems.length === 0) {
                 emptyState.style.display = 'flex';
                 emptyState.querySelector('h3').textContent = 'Lista Vazia';
-                emptyState.querySelector('p').textContent = 'Digite um produto abaixo para começar a sua lista de compras.';
+                emptyState.querySelector('p').textContent = 'Toque no + no topo para adicionar um produto à sua lista.';
                 purchasedSection.style.display = 'none';
                 return;
             } else if (displayItems.length === 0) {
@@ -2509,8 +2522,12 @@
             if (item.purchased) {
                 lastToggledItemId = itemId;
                 lastToggledPurchaseHistoryId = recordProductPurchase(item);
+                item.purchaseHistoryId = lastToggledPurchaseHistoryId;
             } else {
-                appData.purchaseHistory = appData.purchaseHistory.filter(entry => entry.itemId !== item.id);
+                // O vínculo identifica somente esta compra, inclusive depois de recarregar a página.
+                // Itens antigos sem vínculo não permitem deduzir com segurança qual registro apagar.
+                removePurchaseHistoryEntry(item.purchaseHistoryId);
+                delete item.purchaseHistoryId;
                 lastToggledItemId = null;
                 lastToggledPurchaseHistoryId = null;
             }
@@ -2554,6 +2571,7 @@
                 if (item) {
                     item.purchased = false;
                     removePurchaseHistoryEntry(lastToggledPurchaseHistoryId);
+                    delete item.purchaseHistoryId;
                     saved = saveData();
                     renderFilterChips();
                     renderList();
@@ -2576,7 +2594,9 @@
         function parseQuickInput(rawText, customId = null) {
             let text = rawText.trim();
             if (!text) return null;
-            if (/^[+-]?0+(?:[.,]0+)?(?:\s|[a-zà-ú])/i.test(text) || /^-\s*\d/.test(text) || /(?:\s|(?:r\$|rs|\$)\s*)-\s*\d+(?:[.,]\d+)?\s*(?:reais|real)?\s*$/i.test(text)) return null;
+            // Normaliza apenas o agrupamento brasileiro inequívoco (1.234,50), preservando pontos decimais.
+            text = text.replace(/\b\d{1,3}(?:\.\d{3})+,\d{1,2}\b/g, value => value.replace(/\./g, ''));
+            if (/^[+-]?0+(?:[.,]0+)?(?:\s|[a-zà-ú])/i.test(text) || /^-\s*\d/.test(text)) return null;
 
             let quantity = 1;
             let unit = 'un';
@@ -2603,10 +2623,12 @@
                 text = text.substring(0, text.length - trailingParen[0].length).trim();
             }
 
+            // Observações finais não podem esconder um preço negativo da validação.
+            if (/(?:\s|(?:r\$|rs|\$)\s*)-\s*\d+(?:[.,]\d+)?\s*(?:reais|real)?\s*$/i.test(text)) return null;
             // Primeiro tenta preço ligado a promoção; `priceMatch` cobre as formas gerais no fim do trecho.
             const totalPriceMatch = text.match(/\s+d[áa]\s+(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$)?\s*$/i);
             const perKgPriceMatch = text.match(/\s+(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?|r\$|rs|\$)?\s*(?:\/|por\s+)(?:kg|quilos?|kilos?|quilogramas?)\s*$/i);
-            const promoPriceMatch = text.match(/(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\s*(?:de|por|a)?\s*(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)?\s*$/i);
+            const promoPriceMatch = text.match(/\b(?:em\s+|na\s+)?(?:promo[çc][ãa]o|promo|oferta)s?\s*(?:de|por|a)?\s*(?:(?:r\$|rs|\$)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais|real|r\$|rs|\$|conto|contos|pila|pilas)?\s*$/i);
             if (perKgPriceMatch) {
                 price = parseFloat(perKgPriceMatch[1].replace(',', '.'));
                 priceBasis = 'kg';
@@ -2628,6 +2650,7 @@
                     price = parseFloat(valStr.replace(',', '.'));
                     if (/^\d+(?:[.,]\d+)?\s*\D/.test(text) && /\d\s+reais?\s*$/i.test(text)) priceBasis = 'total';
                     text = text.substring(0, text.length - priceMatch[0].length).trim();
+                    text = text.replace(/\s+(?:por|a|de)$/i, '').trim();
                     text = text.replace(/[-–—,:]$/, '').trim();
                 }
             }
@@ -2639,6 +2662,17 @@
                 const contextNote = contextNoteMatch[1].trim();
                 notes.push(contextNote.charAt(0).toUpperCase() + contextNote.slice(1));
                 text = text.substring(0, text.length - contextNoteMatch[0].length).trim();
+            } else {
+                // Ocasiões soltas no fim viram observação, exceto após palavras que integram o nome ou indicam marca.
+                const occasion = text.match(/\s+((?:(?:para|pra|pro)\s+(?:(?:a|o|as|os)\s+)?)?(?:f[eé]rias|viagem|anivers[aá]rio|natal|churrasco|casamento|r[eé]veillon|ano novo|p[aá]scoa))\s*$/i);
+                if (occasion) {
+                    const product = text.slice(0, occasion.index).trim();
+                    if (product && !/(?:^|\s)(?:de|do|da|dos|das|marca|tipo|obs|observa[çc][ãa]o)\s*:?$/i.test(product)) {
+                        const note = occasion[1].trim();
+                        notes.push(note.charAt(0).toUpperCase() + note.slice(1));
+                        text = product;
+                    }
+                }
             }
 
             // Retira qualquer observação entre parênteses; `cleanP1` é o conteúdo que será salvo em notes.
@@ -2825,11 +2859,13 @@
                     normalizeText(existingItem.note || '') === normalizeText(item.note || '') &&
                     (existingItem.unit || 'un') === item.unit &&
                     (!existingItem.price || !item.price || existingItem.price === item.price) &&
-                    existingItem.priceBasis !== 'total' && item.priceBasis !== 'total' && !(existingItem.priceBasis === 'kg' && item.price)
+                    existingItem.priceBasis !== 'total' && item.priceBasis !== 'total' &&
+                    (!existingItem.price || !item.price || (existingItem.priceBasis || 'unit') === item.priceBasis)
                 );
                 if (existing) {
                     existing.quantity = Math.round(((existing.quantity || 1) + item.quantity) * 1000) / 1000;
-                    if (item.price) existing.price = item.price;
+                    // Ao preencher preço antes ausente, a referência acompanha o valor para não multiplicar kg por gramas.
+                    if (item.price) { existing.price = item.price; existing.priceBasis = item.priceBasis; }
                 } else {
                     appData.items.unshift(item);
                 }
@@ -2865,6 +2901,42 @@
 
         // Referência persistente ao campo para ligar Enter ao mesmo fluxo do botão de adicionar.
         const quickInput = document.getElementById('quick-input');
+        // A fala reconhecida é apresentada para revisão antes do cadastro.
+        const voiceButton = document.getElementById('btn-voice');
+        const VoiceRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let voiceRecognition = null;
+        voiceButton.addEventListener('click', () => {
+            if (!VoiceRecognition) { showToast('Reconhecimento de voz indisponível neste navegador.'); return; }
+            if (voiceRecognition) { voiceRecognition.stop(); return; }
+            const recognition = new VoiceRecognition();
+            voiceRecognition = recognition;
+            recognition.lang = 'pt-BR';
+            recognition.interimResults = false;
+            voiceButton.setAttribute('aria-label', 'Parar gravação');
+            voiceButton.title = 'Parar gravação';
+            recognition.onresult = event => {
+                const text = event.results[0][0].transcript.trim();
+                if (!text) return;
+                quickInput.value = quickInput.value.trim() ? `${quickInput.value.trim()}, ${text}` : text;
+                const app = document.getElementById('app');
+                app.style.setProperty('--altura-antes-do-teclado', `${app.getBoundingClientRect().height}px`);
+                document.getElementById('add-modal').classList.add('active');
+            };
+            recognition.onerror = event => {
+                const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+                    ? 'Permita o acesso ao microfone no navegador.'
+                    : event.error === 'no-speech' ? 'Nenhuma fala foi detectada. Tente novamente.'
+                    : 'Não foi possível reconhecer a fala. Tente novamente.';
+                showToast(message);
+            };
+            recognition.onend = () => {
+                voiceRecognition = null;
+                voiceButton.setAttribute('aria-label', 'Adicionar por voz');
+                voiceButton.title = 'Adicionar por voz';
+            };
+            try { recognition.start(); showToast('Ouvindo... Toque no microfone para parar.'); }
+            catch (error) { voiceRecognition = null; voiceButton.setAttribute('aria-label', 'Adicionar por voz'); voiceButton.title = 'Adicionar por voz'; showToast('Não foi possível iniciar o microfone.'); }
+        });
         quickInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -2873,6 +2945,8 @@
         });
 
         document.getElementById('btn-quick-add').addEventListener('click', () => {
+            const app = document.getElementById('app');
+            app.style.setProperty('--altura-antes-do-teclado', `${app.getBoundingClientRect().height}px`);
             document.getElementById('add-modal').classList.add('active');
             quickInput.focus();
         });
@@ -2887,9 +2961,6 @@
             purchasedCollapsed = !purchasedCollapsed;
             renderList();
         });
-
-        // Valor de segurança da quantidade em edição quando o campo estiver temporariamente vazio ou inválido.
-        let currentEditingQuantity = 1;
 
         /** Define o passo do botão +/− de acordo com a unidade atualmente escolhida. */
         function getStepAmount() {
@@ -2932,7 +3003,6 @@
                     const addVal = parseFloat(btn.getAttribute('data-add')) || 0;
                     let current = parseFloat(document.getElementById('stepper-val').value) || 0;
                     current = Math.round((current + addVal) * 1000) / 1000;
-                    currentEditingQuantity = current;
                     document.getElementById('stepper-val').value = current;
                 });
             });
@@ -2945,8 +3015,7 @@
 
             document.getElementById('edit-id').value = item.id;
             document.getElementById('edit-name').value = item.name;
-            currentEditingQuantity = item.quantity || 1;
-            document.getElementById('stepper-val').value = currentEditingQuantity;
+            document.getElementById('stepper-val').value = item.quantity;
             document.getElementById('edit-unit').value = item.unit || 'un';
             document.getElementById('edit-price').value = item.price && item.price > 0 ? item.price : '';
             document.getElementById('edit-price-label').textContent = item.priceBasis === 'kg' ? 'Preço por kg (R$)' : item.priceBasis === 'total' ? 'Preço total (R$)' : 'Preço por unidade informada (R$)';
@@ -2980,7 +3049,6 @@
             const step = getStepAmount();
             let current = parseFloat(document.getElementById('stepper-val').value) || 0;
             current = Math.round((current + step) * 1000) / 1000;
-            currentEditingQuantity = current;
             document.getElementById('stepper-val').value = current;
         });
 
@@ -2993,16 +3061,7 @@
             } else {
                 current = step;
             }
-            currentEditingQuantity = current;
             document.getElementById('stepper-val').value = current;
-        });
-
-        // Mantém a última quantidade válida enquanto a pessoa edita o campo manualmente.
-        document.getElementById('stepper-val').addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value);
-            if (!isNaN(val) && val > 0) {
-                currentEditingQuantity = val;
-            }
         });
 
         // Valida nome/quantidade, copia os campos para o produto, salva e redesenha as áreas afetadas.
@@ -3030,7 +3089,7 @@
                 alert('Este preço é por quilo. Mantenha a unidade kg ou g, ou apague o preço para trocar a unidade.');
                 return;
             }
-            item.quantity = (!isNaN(inputQty) && inputQty > 0) ? inputQty : (currentEditingQuantity || 1);
+            item.quantity = inputQty;
             item.name = name;
             item.unit = unit;
             item.price = priceVal;
@@ -3047,7 +3106,7 @@
                 return;
             }
             closeEditModal();
-            showToast(saved ? 'Produto atualizado' : SAVE_ERROR_MESSAGE);
+            showToast('Produto atualizado');
         });
 
         // A exclusão pela folha reaproveita a mesma função usada pelo gesto no cartão.
@@ -3059,13 +3118,25 @@
 
         // Referência reaproveitada para abrir/fechar o seletor de listas.
         const listsModal = document.getElementById('lists-modal');
+        const settingsModal = document.getElementById('settings-modal');
+        document.getElementById('theme-select').addEventListener('change', event => {
+            const theme = event.target.value;
+            document.documentElement.setAttribute('data-theme', theme);
+            try { localStorage.setItem(THEME_KEY, theme); }
+            catch (error) { showToast('Não foi possível salvar o tema.'); }
+        });
+        document.getElementById('btn-open-settings').addEventListener('click', () => {
+            listsModal.classList.remove('active');
+            settingsModal.classList.add('active');
+        });
+        document.getElementById('btn-close-settings').addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+            listsModal.classList.add('active');
+            document.getElementById('btn-open-settings').focus();
+        });
         document.getElementById('btn-select-list').addEventListener('click', () => {
             renderListsManager();
             listsModal.classList.add('active');
-        });
-
-        document.getElementById('btn-close-lists').addEventListener('click', () => {
-            listsModal.classList.remove('active');
         });
 
         listsModal.addEventListener('click', (e) => {
@@ -3232,6 +3303,28 @@
 
         // Modal de compartilhamento usado tanto para mostrar a prévia quanto para fechá-la após copiar.
         const shareModal = document.getElementById('share-modal');
+        const shareSettingsKey = 'lista_compras_share_settings_v1';
+        const shareFields = ['share-hide-list', 'share-hide-categories', 'share-hide-category-icons', 'share-quantity-position', 'share-unit-position', 'share-unit-format', 'share-bold'];
+        try {
+            const saved = JSON.parse(localStorage.getItem(shareSettingsKey) || '{}');
+            shareFields.forEach(id => {
+                const field = document.getElementById(id);
+                // Uma preferência inválida não deve impedir a leitura das demais.
+                const value = saved?.[id];
+                if (field.type === 'checkbox') {
+                    if (typeof value === 'boolean') field.checked = value;
+                } else if (typeof value === 'string' && [...field.options].some(option => option.value === value)) field.value = value;
+            });
+        } catch (error) { console.warn('Não foi possível carregar as preferências de compartilhamento.'); }
+        shareFields.forEach(id => document.getElementById(id).addEventListener('change', () => {
+            const settings = {};
+            shareFields.forEach(key => {
+                const field = document.getElementById(key);
+                settings[key] = field.type === 'checkbox' ? field.checked : field.value;
+            });
+            try { localStorage.setItem(shareSettingsKey, JSON.stringify(settings)); }
+            catch (error) { showToast('Não foi possível salvar as opções de compartilhamento.'); }
+        }));
         document.getElementById('btn-share').addEventListener('click', () => {
             // Só pendências entram no texto; `pendingTotal` soma os preços dessas mesmas linhas.
             const activeList = getActiveList();
@@ -3243,33 +3336,55 @@
                 if (i.price && i.quantity) pendingTotal += itemSubtotal(i);
             });
 
-            let text = `🛒 *${activeList.name}*\n\n`;
+            const hideList = document.getElementById('share-hide-list').checked;
+            const hideCategories = document.getElementById('share-hide-categories').checked;
+            const bold = document.getElementById('share-bold').checked;
+            const quantityBefore = document.getElementById('share-quantity-position').value === 'before';
+            const unitBefore = document.getElementById('share-unit-position').value === 'before';
+            const fullUnit = document.getElementById('share-unit-format').value === 'full';
+            const highlight = value => bold ? `*${value}*` : value;
+            const unitNames = { un: ['unidade', 'unidades'], kg: ['quilo', 'quilos'], g: ['grama', 'gramas'], pct: ['pacote', 'pacotes'], lt: ['litro', 'litros'], ml: ['mililitro', 'mililitros'], cx: ['caixa', 'caixas'], dz: ['dúzia', 'dúzias'] };
+            let text = hideList ? '' : `${highlight(activeList.name)}\n\n`;
 
             if (pending.length > 0) {
-                text += `📝 *Para comprar*\n\n`;
+                text += `${highlight('Para comprar')}\n\n`;
                 // Agrupa as linhas pela ordem padrão das categorias; itens com categoria desconhecida ficam em Outros.
-                const categories = CATEGORIES_LIST.filter(category => category.id !== 'Todos');
+                const categories = hideCategories ? [{ id: 'Todos' }] : CATEGORIES_LIST.filter(category => category.id !== 'Todos');
                 categories.forEach(category => {
                     const categoryItems = pending.filter(item => {
+                        if (hideCategories) return true;
                         const itemCategory = categories.find(entry => entry.id === item.category);
                         return (itemCategory ? itemCategory.id : 'Outros') === category.id;
                     });
                     if (categoryItems.length === 0) return;
 
-                    text += `${category.icon} *${category.name}*\n`;
+                    if (!hideCategories) text += `${document.getElementById('share-hide-category-icons').checked ? '' : category.icon + ' '}${highlight(category.name)}\n`;
                     categoryItems.forEach(i => {
                         const priceStr = i.price > 0 ? ` · ${formatMoney(itemSubtotal(i))}` : '';
-                        text += `☐ ${i.name} · ${i.quantity} ${i.unit}${priceStr}\n`;
+                        const unit = fullUnit && unitNames[i.unit] ? unitNames[i.unit][i.quantity === 1 ? 0 : 1] : i.unit;
+                        const before = [quantityBefore ? i.quantity : '', unitBefore ? unit : ''].filter(Boolean).join(' ');
+                        const after = [!quantityBefore ? i.quantity : '', !unitBefore ? unit : ''].filter(Boolean).join(' ');
+                        text += `${before ? highlight(before) + ' - ' : ''}${i.name}${after ? ' - ' + highlight(after) : ''}${priceStr}\n`;
                     });
-                    text += '\n';
+                    if (!hideCategories) text += '\n';
                 });
             }
 
-            if (pendingTotal > 0) text += `💰 *Total para comprar:* ${formatMoney(pendingTotal)}\n`;
-
-            text += `\n📋 _Lista de Compras_`;
+            if (pendingTotal > 0) text += `\n${highlight('Total para comprar:')} ${formatMoney(pendingTotal)}\n`;
 
             document.getElementById('share-text-preview').textContent = text;
+            // Em celulares compatíveis, abre o compartilhamento do aparelho diretamente.
+            const mobile = navigator.userAgentData?.mobile || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (mobile && typeof navigator.share === 'function') {
+                try {
+                    navigator.share({ text }).catch(error => {
+                        if (error.name !== 'AbortError') shareModal.classList.add('active');
+                    });
+                } catch (error) {
+                    shareModal.classList.add('active');
+                }
+                return;
+            }
             shareModal.classList.add('active');
         });
 
@@ -3357,7 +3472,7 @@
         // Apresenta os gestos principais sem modificar listas ou histórico.
         const tutorial = document.getElementById('tutorial');
         const tutorialSteps = [
-            ['🛒', 'Monte sua lista', 'Digite um produto na barra e toque no botão + para adicionar.'],
+            ['🛒', 'Monte sua lista', 'Toque no + no topo, digite o produto e toque em Adicionar.'],
             ['✅', 'Marque suas compras', 'Toque em um produto para marcá-lo como comprado.'],
             ['✏️', 'Edite um produto', 'Segure o cartão do produto para alterar quantidade, preço ou observação.'],
             ['↔️', 'Remova quando precisar', 'Arraste o produto para o lado para excluir. Depois, você pode tocar em Desfazer.']
@@ -3390,6 +3505,29 @@
                 if (e.shiftKey && document.activeElement === tutorialSkip) { e.preventDefault(); tutorialNext.focus(); }
                 else if (!e.shiftKey && document.activeElement === tutorialNext) { e.preventDefault(); tutorialSkip.focus(); }
             }
+        });
+
+        // Contém a navegação por teclado na janela superior, inclusive na confirmação sobre Minhas Listas.
+        // Não fecha Minhas Listas pelo teclado: o fechamento pelo fundo continua como definido no projeto.
+        const activeDialog = () => [...document.querySelectorAll('.modal-overlay.active')]
+            .sort((a, b) => Number(getComputedStyle(b).zIndex) - Number(getComputedStyle(a).zIndex))[0];
+        const dialogControls = modal => [...modal.querySelectorAll('button, input:not([type="hidden"]), select, textarea, summary, [tabindex="0"]')]
+            .filter(control => !control.disabled && control.getClientRects().length);
+        document.addEventListener('keydown', event => {
+            const modal = activeDialog();
+            if (!modal || event.key !== 'Tab') return;
+            const controls = dialogControls(modal);
+            const first = controls[0];
+            const last = controls[controls.length - 1];
+            if (!first) return;
+            if (!modal.contains(document.activeElement) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
+                event.preventDefault();
+                (event.shiftKey ? last : first).focus({ preventScroll: true });
+            }
+        });
+        document.addEventListener('focusin', event => {
+            const modal = activeDialog();
+            if (modal && !modal.contains(event.target)) dialogControls(modal)[0]?.focus({ preventScroll: true });
         });
 
         // Inicialização em ordem: preferências e dados primeiro, depois interface e gestos dependentes do DOM.
