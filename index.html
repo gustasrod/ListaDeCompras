@@ -499,6 +499,8 @@
         }
 
         .item-meta {
+            flex-wrap: wrap;
+            overflow-wrap: anywhere;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -1118,26 +1120,26 @@
         .header-left { min-width: 0; flex: 1; min-height: 48px; }
         .header-actions { gap: 0; flex-shrink: 0; }
         .app-title-group { min-width: 0; }
-        .app-title-group h1 { font-size: 19px; }
+        .app-title-group h1 { font-size: 21px; }
         .app-title-group span { font-size: 14px; }
         .btn-icon, .item-check-btn { width: 48px; height: 48px; }
         .btn-icon { flex-shrink: 0; }
         .btn-icon svg { width: 24px; height: 24px; }
         .totals-bar { font-size: 16px; padding: 10px 14px; gap: 8px; }
         .totals-price { font-size: 17px; padding: 5px 9px; }
-        .filter-chip, .chip, .preset-chip { min-height: 44px; font-size: 15px; }
+        .filter-chip, .chip, .preset-chip { min-height: 44px; font-size: 18px; }
         .filter-chip .chip-count { font-size: 13px; }
         .item-card { min-height: 72px; padding: 12px; gap: 10px; }
         .item-product-icon { font-size: 24px; }
-        .item-name { font-size: 17px; white-space: normal; overflow-wrap: anywhere; }
-        .item-meta, .item-category-tag, .item-quantity-pill, .item-price-val { font-size: 14px; }
-        .section-header, .empty-placeholder p { font-size: 15px; }
-        .form-label, .dialog-desc { font-size: 15px; }
-        .form-input, .form-select, .stepper-input { font-size: 16px; }
+        .item-name { font-size: 21px; white-space: normal; overflow-wrap: anywhere; }
+        .item-meta, .item-category-tag, .item-quantity-pill, .item-price-val { font-size: 17px; }
+        .section-header, .empty-placeholder p { font-size: 18px; }
+        .form-label, .dialog-desc { font-size: 18px; }
+        .form-input, .form-select, .stepper-input { font-size: 19px; }
         .form-input, .form-select, .stepper-btn { min-height: 48px; }
         .stepper-btn { width: 48px; height: 48px; flex-shrink: 0; }
-        .btn-primary, .btn-secondary, .btn-danger { min-height: 48px; font-size: 16px; }
-        .toast-snack, .toast-undo, .share-preview { font-size: 15px; }
+        .btn-primary, .btn-secondary, .btn-danger { min-height: 48px; font-size: 18px; }
+        .toast-snack, .toast-undo, .share-preview { font-size: 18px; }
         .toast-undo { min-height: 44px; }
         .tutorial-progress { font-size: 15px; }
 
@@ -2829,9 +2831,9 @@
          * `rawVal` é o texto digitado, `chunks` os produtos separados e `newItems` os objetos válidos;
          * `saved` determina a mensagem final e `container` é rolado para mostrar os novos cartões.
          */
-        function addItemFromQuickInput() {
+        function addItemFromQuickInput(voiceText = null) {
             const input = document.getElementById('quick-input');
-            const rawVal = input.value;
+            const rawVal = voiceText ?? input.value;
             if (!rawVal || !rawVal.trim()) return;
 
             const chunks = splitMultiItemText(rawVal);
@@ -2847,6 +2849,7 @@
             });
 
             if (newItems.length !== chunks.length) {
+                if (voiceText !== null) { input.value = [input.value.trim(), voiceText].filter(Boolean).join(', '); document.getElementById('add-modal').classList.add('active'); }
                 showToast('Confira a quantidade e o preço dos produtos.');
                 return;
             }
@@ -2884,7 +2887,7 @@
             renderQuickChips();
 
             if (saved) {
-                input.value = '';
+                if (voiceText === null) input.value = '';
                 input.blur();
                 document.getElementById('add-modal').classList.remove('active');
             }
@@ -2893,6 +2896,7 @@
             container.scrollTop = 0;
 
             if (!saved) {
+                if (voiceText !== null) { input.value = [input.value.trim(), voiceText].filter(Boolean).join(', '); document.getElementById('add-modal').classList.add('active'); }
                 showToast(SAVE_ERROR_MESSAGE);
             } else if (newItems.length > 1) {
                 showToast(`${newItems.length} itens adicionados!`);
@@ -2917,10 +2921,9 @@
             recognition.onresult = event => {
                 const text = event.results[0][0].transcript.trim();
                 if (!text) return;
-                quickInput.value = quickInput.value.trim() ? `${quickInput.value.trim()}, ${text}` : text;
-                const app = document.getElementById('app');
-                app.style.setProperty('--altura-antes-do-teclado', `${app.getBoundingClientRect().height}px`);
-                document.getElementById('add-modal').classList.add('active');
+                const voiceText = text.replace(/\s+e\s+/gi, ', ');
+                addItemFromQuickInput(voiceText);
+                recognition.stop();
             };
             recognition.onerror = event => {
                 const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
@@ -2950,7 +2953,7 @@
             document.getElementById('add-modal').classList.add('active');
             quickInput.focus();
         });
-        document.getElementById('confirm-add').addEventListener('click', addItemFromQuickInput);
+        document.getElementById('confirm-add').addEventListener('click', () => addItemFromQuickInput());
         document.getElementById('cancel-add').addEventListener('click', () => {
             quickInput.blur();
             document.getElementById('add-modal').classList.remove('active');
